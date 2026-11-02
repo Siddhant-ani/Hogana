@@ -84,7 +84,7 @@ export default function ReportsClient({ initialData }: ReportsClientProps) {
       csvContent = standardReport.csvData;
       filename = `${standardReport.reportId.toLowerCase()}.csv`;
     } else if (selectedReportType === "reviews") {
-      filename = "hogana-local-demonstration-reviews.csv";
+      filename = "hogana-local-reviews.csv";
       const headers = ["ProposalId", "Decision", "ReviewNote", "ReviewedAt"];
       const lines = [headers.join(",")];
       for (const r of localReviews) {
@@ -94,7 +94,7 @@ export default function ReportsClient({ initialData }: ReportsClientProps) {
       }
       csvContent = lines.join("\n");
     } else if (selectedReportType === "sim_runs") {
-      filename = "hogana-local-demonstration-simruns.csv";
+      filename = "hogana-local-simruns.csv";
       const headers = ["RunId", "ScenarioType", "Summary", "Details", "SimulatedAt"];
       const lines = [headers.join(",")];
       for (const s of localSimRuns) {
@@ -125,14 +125,14 @@ export default function ReportsClient({ initialData }: ReportsClientProps) {
       jsonString = JSON.stringify(standardReport, null, 2);
       filename = `${standardReport.reportId.toLowerCase()}.json`;
     } else if (selectedReportType === "reviews") {
-      filename = "hogana-local-demonstration-reviews.json";
+      filename = "hogana-local-reviews.json";
       const validReviews = localReviews.filter(isValidLocalReview);
       jsonString = JSON.stringify(
         {
-          reportId: "REP-DEMO-REVIEWS",
-          title: "Local Demonstration Dispatcher Review Audit Log",
+          reportId: "REP-REVIEWS",
+          title: "Local Dispatcher Review Audit Log",
           disclaimer:
-            "Demonstration review records are stored locally in this browser. They are not official BMTC approvals or shared operational records.",
+            "Review records are stored locally in this browser. They are not official BMTC approvals or shared operational records.",
           totalReviews: validReviews.length,
           reviews: validReviews
         },
@@ -140,14 +140,14 @@ export default function ReportsClient({ initialData }: ReportsClientProps) {
         2
       );
     } else if (selectedReportType === "sim_runs") {
-      filename = "hogana-local-demonstration-simruns.json";
+      filename = "hogana-local-simruns.json";
       const validRuns = localSimRuns.filter(isValidLocalSimRun);
       jsonString = JSON.stringify(
         {
-          reportId: "REP-DEMO-SIMRUNS",
-          title: "Local Demonstration Scenario Simulation Runs Log",
+          reportId: "REP-SIMRUNS",
+          title: "Local Scenario Simulation Runs Log",
           disclaimer:
-            "Simulation run records are stored locally in this browser. They are not official BMTC operational records.",
+            "Simulation run records are stored locally in this browser. They reflect user-selected simulation inputs evaluated against approved mathematical constraints.",
           totalRuns: validRuns.length,
           runs: validRuns
         },
@@ -178,8 +178,8 @@ export default function ReportsClient({ initialData }: ReportsClientProps) {
         <PageHeader
           badge="Operational Reports"
           badgeTone="teal"
-          corridor="Silk Board ↔ Hebbal (19.8 km)"
-          title="Corridor Operations Performance Reports"
+          serviceArea="Silk Board–Hebbal, Bengaluru (19.8 km)"
+          title="Service Operations Performance Reports"
           description="Inspect and export formal performance audit reports. Download structured tabular CSV or complete JSON representations, or print directly to PDF."
           actions={
             <div className="flex flex-wrap items-center gap-2">
@@ -265,7 +265,7 @@ export default function ReportsClient({ initialData }: ReportsClientProps) {
                 </p>
                 <p className="flex items-center gap-1.5 sm:justify-end">
                   <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                  <span>Demonstration Date: <strong>{standardReport.evaluationDate}</strong></span>
+                  <span>Operational Date: <strong>{standardReport.evaluationDate}</strong></span>
                 </p>
                 <p className="font-mono text-[11px] text-slate-400">
                   Evaluation Timestamp: {standardReport.evaluationTimestamp}
@@ -273,11 +273,11 @@ export default function ReportsClient({ initialData }: ReportsClientProps) {
               </div>
             </div>
 
-            {/* Mandatory Provenance & Demonstration Disclaimer */}
+            {/* Mandatory Provenance & Disclosure */}
             <div className="mt-3 p-3 rounded-lg bg-amber-50/80 border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
               <p className="leading-relaxed">
-                <strong>Mandatory Compliance Notice:</strong> {standardReport.disclaimer} All metrics, observations, and recommendations are evaluated deterministically from approved synthetic corridor demonstration data for 10 March 2025.
+                <strong>Mandatory Compliance Notice:</strong> {standardReport.disclaimer} All metrics, observations, and recommendations are evaluated deterministically from approved synthetic operational data for 10 March 2025.
               </p>
             </div>
           </div>
@@ -377,7 +377,7 @@ export default function ReportsClient({ initialData }: ReportsClientProps) {
           {/* Document Footer */}
           <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-[11px] text-slate-400">
             <p>HOGANA Operational Intelligence Platform • Generated for 10 March 2025</p>
-            <p className="font-mono">Audit Record: {standardReport.reportId} • Confidential Demonstration</p>
+            <p className="font-mono">Audit Record: {standardReport.reportId} • Illustrative Synthetic Operational Data</p>
           </div>
         </div>
       )}
@@ -389,14 +389,14 @@ export default function ReportsClient({ initialData }: ReportsClientProps) {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
               <div>
                 <span className="font-mono text-xs font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded">
-                  DOCUMENT: REP-DEMO-REVIEWS
+                  DOCUMENT: REP-REVIEWS
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 mt-1">
-                  Local Demonstration Dispatcher Review Audit Log
+                  Local Dispatcher Review Audit Log
                 </h2>
               </div>
               <div className="text-left sm:text-right text-xs text-slate-500 space-y-0.5">
-                <p>Silk Board ↔ Hebbal Corridor</p>
+                <p>Silk Board–Hebbal, Bengaluru Service Area</p>
                 <p>Recorded Reviews: <strong>{localReviews.length}</strong></p>
               </div>
             </div>
@@ -404,7 +404,7 @@ export default function ReportsClient({ initialData }: ReportsClientProps) {
             <div className="mt-3 p-3 rounded-lg bg-amber-50/80 border border-amber-200 text-xs text-amber-900 flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
               <p className="leading-relaxed">
-                <strong>Demonstration Boundary Disclosure:</strong> Demonstration review records are stored locally in this browser. They are not official BMTC approvals, automated dispatch triggers, or shared operational records.
+                <strong>Operational Boundary Disclosure:</strong> Review records are stored locally in this browser. They are not official BMTC approvals, automated dispatch triggers, or shared operational records.
               </p>
             </div>
           </div>
@@ -461,14 +461,14 @@ export default function ReportsClient({ initialData }: ReportsClientProps) {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
               <div>
                 <span className="font-mono text-xs font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded">
-                  DOCUMENT: REP-DEMO-SIMRUNS
+                  DOCUMENT: REP-SIMRUNS
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 mt-1">
-                  Local Demonstration Scenario Simulation Runs Log
+                  Local Scenario Simulation Runs Log
                 </h2>
               </div>
               <div className="text-left sm:text-right text-xs text-slate-500 space-y-0.5">
-                <p>Silk Board ↔ Hebbal Corridor</p>
+                <p>Silk Board–Hebbal, Bengaluru Service Area</p>
                 <p>Recorded Simulation Runs: <strong>{localSimRuns.length}</strong></p>
               </div>
             </div>
@@ -476,7 +476,7 @@ export default function ReportsClient({ initialData }: ReportsClientProps) {
             <div className="mt-3 p-3 rounded-lg bg-teal-50/80 border border-teal-200 text-xs text-teal-950 flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
               <p className="leading-relaxed">
-                <strong>Demonstration Boundary Disclosure:</strong> Simulation run records are stored locally in this browser. They reflect user-selected simulation inputs evaluated against approved mathematical constraints.
+                <strong>Operational Boundary Disclosure:</strong> Simulation run records are stored locally in this browser. They reflect user-selected simulation inputs evaluated against approved mathematical constraints.
               </p>
             </div>
           </div>

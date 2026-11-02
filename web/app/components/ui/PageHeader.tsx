@@ -3,7 +3,8 @@ import React from "react";
 interface PageHeaderProps {
   badge?: string;
   badgeTone?: "teal" | "amber" | "navy" | "slate";
-  corridor?: string;
+  serviceArea?: string;
+  corridor?: string; // backwards compatibility
   title: string;
   description?: string;
   actions?: React.ReactNode;
@@ -12,11 +13,13 @@ interface PageHeaderProps {
 export default function PageHeader({
   badge,
   badgeTone = "teal",
-  corridor = "Silk Board ↔ Hebbal | Bengaluru (19.8 km)",
+  serviceArea,
+  corridor,
   title,
   description,
   actions
 }: PageHeaderProps) {
+  const displayArea = serviceArea || corridor || "Silk Board–Hebbal, Bengaluru (19.8 km)";
   const badgeClasses = {
     teal: "text-[#0F8278] bg-[#EAF4F7] border-[#0F8278]/30",
     amber: "text-[#D97706] bg-amber-50 border-amber-200",
@@ -36,10 +39,10 @@ export default function PageHeader({
                 {badge}
               </span>
             )}
-            {corridor && (
+            {displayArea && (
               <>
                 <span className="text-xs text-slate-300">•</span>
-                <span className="text-xs font-medium text-slate-600">{corridor}</span>
+                <span className="text-xs font-medium text-slate-600">{displayArea}</span>
               </>
             )}
           </div>

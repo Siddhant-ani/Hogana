@@ -197,10 +197,15 @@ export async function getSimulationBaselineData(): Promise<SimulationResponse> {
       throw new Error('No standby crew records available for relief simulation.');
     }
 
+    const eveningCancelledTrip = dataset.scheduledTrips.find(
+      (t) => t.direction === 'DOWN' && t.final_outcome === 'cancelled'
+    );
+    const dynamicCancelledTripId = eveningCancelledTrip ? eveningCancelledTrip.trip_id : 'Not available';
+
     const reliefBaseline = {
       measuredGapSeconds: demoGap.measuredSeconds,
       largeGapThresholdSeconds: demoGap.thresholdSeconds,
-      cancelledTripId: 'T-DN-033',
+      cancelledTripId: dynamicCancelledTripId,
       terminalName: demoGap.stopName ?? 'Hebbal DOWN Terminal',
       evaluationTimestamp: evening.evaluationTimestamp ?? '2025-03-10T18:15:00',
       vehicles: vehicleOptions,

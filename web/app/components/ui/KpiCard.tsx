@@ -70,7 +70,7 @@ export default function KpiCard({
 
       <div className="mt-3 pt-3 border-t border-[#DCE5ED]/60 flex items-center justify-between text-xs gap-2">
         <span className="text-slate-500 truncate" title={benchmark || hint}>
-          {benchmark || hint || "Corridor Benchmark"}
+          {benchmark || hint || "Service Benchmark"}
         </span>
         {statusText && (
           <span

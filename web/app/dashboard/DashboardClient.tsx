@@ -90,9 +90,9 @@ export default function DashboardClient({ responses }: DashboardClientProps) {
       <PageHeader
         badge="Control Room"
         badgeTone="teal"
-        corridor={corridorName}
-        title="Corridor Operations Dashboard"
-        description={currentView.viewSubtitle}
+        serviceArea="Silk Board–Hebbal, Bengaluru"
+        title="Operations Dashboard"
+        description={currentView.viewSubtitle.replace(/corridor/gi, 'service area')}
         actions={
           <div className="flex flex-wrap items-center bg-slate-100 p-1.5 rounded-xl border border-slate-200 self-start lg:self-auto">
             {availableViews.map((v) => {
@@ -154,7 +154,7 @@ export default function DashboardClient({ responses }: DashboardClientProps) {
           <div className="flex items-center gap-1.5 text-slate-700 bg-slate-50 border border-slate-200 rounded px-2.5 py-1 text-[11px]">
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
             <span>
-              <strong>Audited Baseline:</strong> Reconciled across all 86 planned corridor timetable slots.
+              <strong>Audited Baseline:</strong> Reconciled across all 86 planned service timetable slots.
             </span>
           </div>
         )}
@@ -263,7 +263,7 @@ export default function DashboardClient({ responses }: DashboardClientProps) {
             {headwaySummary.otpSummary.available && (
               <div className="mb-4 bg-slate-50 border border-slate-200 rounded-lg p-3 flex items-center justify-between text-xs">
                 <div>
-                  <span className="font-semibold text-slate-800">Corridor On-Time Performance (OTP)</span>
+                  <span className="font-semibold text-slate-800">Service On-Time Performance (OTP)</span>
                   <p className="text-[11px] text-slate-500">
                     Threshold: ±{headwaySummary.otpSummary.onTimeThresholdSeconds}s from schedule ({headwaySummary.otpSummary.totalKnownVisits} operated visits evaluated)
                   </p>
@@ -686,7 +686,7 @@ export default function DashboardClient({ responses }: DashboardClientProps) {
           <div className="flex items-center gap-2">
             <Bus className="h-4 w-4 text-teal-600" />
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
-              Corridor Fleet Status &amp; Crew Allocation
+              Service Fleet Status &amp; Crew Allocation
             </h3>
           </div>
           <span className="text-xs text-slate-500">

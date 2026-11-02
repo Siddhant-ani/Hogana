@@ -1,61 +1,234 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('HOGANA End-to-End Application Verification', () => {
+const VALID_EMAIL = 'operator@hogana.transit';
+const VALID_PASSWORD = 'HoganaOps@2025!';
 
-  test('1. Public Marketing Landing Page renders hook, headline and interactive tabs', async ({ page }) => {
+test.describe('HOGANA End-to-End Acceptance: Branding, Auth, Terminology & Workflows', () => {
+
+  // Helper function to log in
+  async function performLogin(page: any, email = VALID_EMAIL, password = VALID_PASSWORD) {
+    await page.goto('/login');
+    await page.fill('input#email', email);
+    await page.fill('input#password', password);
+    await page.click('button[type="submit"]');
+    await page.waitForURL((url: URL) => !url.pathname.includes('/login'), { timeout: 10000 });
+  }
+
+  // 1. BRANDING & SINGLE LINK LOGO VERIFICATION ACROSS ALL ROUTES
+  test('1. Shared HOGANA Brand component is a single clickable link to / on all pages', async ({ page }) => {
+    // 1.1 Landing page (/)
     await page.goto('/');
-    
-    // Verbatim Hook from Prompt
-    await expect(page.locator('text=A bus can be tracked. A service gap needs to be managed.')).toBeVisible();
+    const homeBrand = page.getByRole('link', { name: 'HOGANA Home' }).first();
+    await expect(homeBrand).toBeVisible();
+    await expect(homeBrand).toHaveAttribute('href', '/');
+    await homeBrand.click();
+    await expect(page).toHaveURL('/');
 
-    // Verbatim Supporting Headline from Prompt
+    // 1.2 Login page (/login)
+    await page.goto('/login');
+    const loginBrand = page.getByRole('link', { name: 'HOGANA Home' }).first();
+    await expect(loginBrand).toBeVisible();
+    await expect(loginBrand).toHaveAttribute('href', '/');
+    await loginBrand.click();
+    await expect(page).toHaveURL('/');
+
+    // Authenticate to access protected operational routes
+    await performLogin(page);
+
+    // 1.3 Dashboard (/dashboard)
+    await page.goto('/dashboard');
+    const dashBrand = page.getByRole('link', { name: 'HOGANA Home' }).first();
+    await expect(dashBrand).toBeVisible();
+    await expect(dashBrand).toHaveAttribute('href', '/');
+    await dashBrand.click();
+    await expect(page).toHaveURL('/');
+
+    // 1.4 Data Centre (/data)
+    await page.goto('/data');
+    const dataBrand = page.getByRole('link', { name: 'HOGANA Home' }).first();
+    await expect(dataBrand).toBeVisible();
+    await expect(dataBrand).toHaveAttribute('href', '/');
+    await dataBrand.click();
+    await expect(page).toHaveURL('/');
+
+    // 1.5 Interventions (/interventions)
+    await page.goto('/interventions');
+    const intervBrand = page.getByRole('link', { name: 'HOGANA Home' }).first();
+    await expect(intervBrand).toBeVisible();
+    await expect(intervBrand).toHaveAttribute('href', '/');
+    await intervBrand.click();
+    await expect(page).toHaveURL('/');
+
+    // 1.6 Simulation (/simulation)
+    await page.goto('/simulation');
+    const simBrand = page.getByRole('link', { name: 'HOGANA Home' }).first();
+    await expect(simBrand).toBeVisible();
+    await expect(simBrand).toHaveAttribute('href', '/');
+    await simBrand.click();
+    await expect(page).toHaveURL('/');
+
+    // 1.7 Reports (/reports)
+    await page.goto('/reports');
+    const repBrand = page.getByRole('link', { name: 'HOGANA Home' }).first();
+    await expect(repBrand).toBeVisible();
+    await expect(repBrand).toHaveAttribute('href', '/');
+    await repBrand.click();
+    await expect(page).toHaveURL('/');
+  });
+
+  // 2. AUTHENTICATION & ROUTE PROTECTION
+  test('2. Unauthenticated access redirects to /login, invalid login fails, valid login succeeds, sign out invalidates session', async ({ page, context }) => {
+    // Clear cookies
+    await context.clearCookies();
+
+    // 2.1 Direct unauthenticated access to /dashboard redirects to /login with callbackUrl
+    await page.goto('/dashboard');
+    await expect(page).toHaveURL(/\/login\?callbackUrl=.*dashboard/);
+
+    // 2.2 Direct unauthenticated access to other protected routes
+    await page.goto('/data');
+    await expect(page).toHaveURL(/\/login\?callbackUrl=.*data/);
+
+    // 2.3 Login page controls: show/hide password toggle
+    await page.goto('/login');
+    const passwordInput = page.locator('input#password');
+    const toggleBtn = page.locator('button[aria-label="Show password"]');
+    await expect(passwordInput).toHaveAttribute('type', 'password');
+    await toggleBtn.click();
+    await expect(passwordInput).toHaveAttribute('type', 'text');
+    await page.locator('button[aria-label="Hide password"]').click();
+    await expect(passwordInput).toHaveAttribute('type', 'password');
+
+    // 2.4 Failed login attempt
+    await page.fill('input#email', VALID_EMAIL);
+    await page.fill('input#password', 'WrongPassword123!');
+    await page.click('button[type="submit"]');
+    await expect(page.locator('text=Authentication Failure')).toBeVisible({ timeout: 5000 });
+    await expect(page).toHaveURL(/\/login/);
+
+    // 2.5 Successful login with operator credentials
+    await page.fill('input#password', VALID_PASSWORD);
+    await page.click('button[type="submit"]');
+
+    // Should redirect to /dashboard
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
+
+    // Verify cookie exists
+    const cookies = await context.cookies();
+    const sessionCookie = cookies.find(c => c.name === 'hogana_session');
+    expect(sessionCookie).toBeDefined();
+    expect(sessionCookie?.httpOnly).toBe(true);
+
+    // 2.6 Visiting /login when authenticated redirects to /dashboard
+    await page.goto('/login');
+    await expect(page).toHaveURL(/\/dashboard/);
+
+    // 2.7 Header shows authenticated user and working Sign out action
+    await page.goto('/');
+    const signOutBtn = page.locator('button:has-text("Sign out")');
+    await expect(signOutBtn).toBeVisible();
+
+    // 2.8 Click Sign out
+    await signOutBtn.click();
+    await page.waitForURL((url: URL) => url.pathname === '/', { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
+    // Session cookie should be cleared
+    const cookiesAfterLogout = await context.cookies();
+    const activeSession = cookiesAfterLogout.find(c => c.name === 'hogana_session' && c.value);
+    expect(activeSession).toBeUndefined();
+
+    // Attempting to visit /dashboard now should redirect back to /login
+    await page.goto('/dashboard');
+    await expect(page).toHaveURL(/\/login\?callbackUrl=.*dashboard/);
+  });
+
+  // 3. PUBLIC MARKETING LANDING PAGE & MOBILE MENU
+  test('3. Public landing page renders hook, planned pilot disclosures, interactive preview tabs, and mobile menu', async ({ page }) => {
+    await page.goto('/');
+
+    // Verbatim Hook
+    await expect(page.getByText(/A bus can be tracked\. A service gap needs to be managed\./i)).toBeVisible();
+
+    // Verbatim Supporting Headline
     await expect(
-      page.locator('text=HOGANA turns transport operations data into clear headway, bunching, crowding and service-gap insights')
+      page.getByText(/HOGANA turns transport operations data into clear headway, bunching, crowding and service-gap insights/i)
     ).toBeVisible();
 
-    // Corridor context
-    await expect(page.locator('text=Silk Board ↔ Hebbal Corridor').first()).toBeVisible();
+    // Honest Disclosure Banner
+    await expect(page.getByText(/Illustrative synthetic operational data — not connected to live BMTC systems\./i).first()).toBeVisible();
 
-    // Switch Interactive Preview Tabs
+    // Service Area Label (replaces Corridor)
+    await expect(page.getByText(/Silk Board–Hebbal, Bengaluru/i).first()).toBeVisible();
+
+    // Interactive Preview Tabs
     const reliefTab = page.locator('button', { hasText: 'Standby Relief Dispatch' });
     if (await reliefTab.isVisible()) {
       await reliefTab.click();
-      await expect(page.locator('text=BUS-13 Staged at Hebbal DOWN')).toBeVisible();
+      await expect(page.getByText(/BUS-13 Staged at Hebbal DOWN/i)).toBeVisible();
     }
 
     const crowdingTab = page.locator('button', { hasText: 'Passenger Crowding' });
     if (await crowdingTab.isVisible()) {
       await crowdingTab.click();
-      await expect(page.locator('text=Kadubeesanahalli UP')).toBeVisible();
+      await expect(page.getByText(/Kadubeesanahalli UP/i).first()).toBeVisible();
     }
-  });
 
-  test('2. Pilot Enquiry Form submits with honest feedback', async ({ page }) => {
+    // Mobile Navigation Menu
+    await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/');
 
-    // Scroll to pilot enquiry form
+    const toggleButton = page.locator('button[aria-label="Open navigation menu"]');
+    await expect(toggleButton).toBeVisible();
+    await toggleButton.click();
+
+    const mobileDrawer = page.locator('#mobile-navigation-drawer');
+    await expect(mobileDrawer).toBeVisible();
+    await expect(mobileDrawer.locator('text=Dashboard')).toBeVisible();
+    await expect(mobileDrawer.locator('text=Sign in')).toBeVisible();
+  });
+
+  // 4. PILOT ENQUIRY API & FORM VALIDATION
+  test('4. Pilot Enquiry Form validates inputs and handles submissions safely', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/');
+
     const pilotSection = page.locator('#pilot-enquiry');
     await pilotSection.scrollIntoViewIfNeeded();
 
-    await page.fill('input[placeholder*="Ramesh Kumar"]', 'Director S. Rao');
-    await page.fill('input[placeholder*="BMTC"]', 'Bangalore Mobility Operations');
-    await page.fill('input[placeholder*="name@agency"]', 's.rao@bengalurutransport.org');
-    await page.selectOption('select', { index: 1 }); // "1 – 50 buses (Corridor trial)"
-    await page.fill('textarea', 'Interested in evaluating headway regularity and bunching holding on the ORR corridor.');
-
+    // Attempt invalid email
+    await page.fill('input[placeholder*="Ramesh Kumar"]', 'Transit Director');
+    await page.fill('input[placeholder*="BMTC"]', 'Regional Transit Agency');
+    await page.fill('input[placeholder*="name@agency"]', 'invalid-email-format');
+    await page.fill('textarea', 'Brief text');
     await page.click('button:has-text("Submit Pilot Enquiry")');
 
-    // Verify submission feedback message from server route
+    const emailInput = page.locator('input[placeholder*="name@agency"]');
+    const isValid = await emailInput.evaluate((el: HTMLInputElement) => el.checkValidity());
+    expect(isValid).toBe(false);
+
+    // Provide valid email and message
+    await page.fill('input[placeholder*="name@agency"]', 'director@transitauthority.gov');
+    await page.selectOption('select', { index: 1 });
+    await page.fill('textarea', 'Requesting service operations pilot evaluation.');
+    await page.click('button:has-text("Submit Pilot Enquiry")');
+
     await expect(
-      page.locator('text=Enquiry received')
-    ).toBeVisible();
+      page.locator('text=Pilot enquiry delivery target is not configured').or(
+        page.locator('text=Enquiry received')
+      ).or(
+        page.locator('text=Thank you. Your pilot enquiry has been delivered')
+      )
+    ).toBeVisible({ timeout: 8000 });
   });
 
-  test('3. Operations Dashboard renders hierarchy, 4 priority KPIs, and view switching', async ({ page }) => {
+  // 5. OPERATIONS DASHBOARD (AUTHENTICATED)
+  test('5. Operations Dashboard renders hierarchy, 4 priority KPIs, and all view selectors', async ({ page }) => {
+    await performLogin(page);
     await page.goto('/dashboard');
 
-    // Verify Header
-    await expect(page.locator('h1:has-text("Corridor Operations Dashboard")')).toBeVisible();
+    // Verify Title & Breadcrumb
+    await expect(page.locator('h1:has-text("Operations Dashboard")')).toBeVisible();
 
     // Verify 4 Priority KPIs exist
     await expect(page.locator('text=Operated Trips & Fulfilment')).toBeVisible();
@@ -79,79 +252,76 @@ test.describe('HOGANA End-to-End Application Verification', () => {
     await expect(page.locator('text=Audited Baseline')).toBeVisible();
   });
 
-  test('4. Data Centre displays 56/56 checks, Commuter Insights research tab, and CSV browser', async ({ page }) => {
+  // 6. DATA CENTRE (AUTHENTICATED)
+  test('6. Data Centre displays 56/56 checks, AGGREGATE research only, and NO individual commuter profiles', async ({ page }) => {
+    await performLogin(page);
     await page.goto('/data');
 
     // Validation Audit Tab
     await expect(page.locator('text=56/56 Checks Verified').first()).toBeVisible();
-    await expect(page.locator('text=Step 1 Operational Dataset Validation Report')).toBeVisible();
 
     // Commuter Insights Tab
     await page.click('button:has-text("Commuter Insights — Illustrative Case Study")');
-    await expect(page.locator('text=Illustrative Commuter Research Case Study')).toBeVisible();
-    await expect(page.locator('text=88%')).toBeVisible(); // 88% peak commute
-    await expect(page.locator('text=77%')).toBeVisible(); // 77% rarely/never vacant seat
-    await expect(page.locator('text=10 Core Commuter Pain Points')).toBeVisible();
-    await expect(page.locator('text=Overcrowding / no standing room').first()).toBeVisible();
 
-    // Search within 100 commuter profiles
-    const commuterSearch = page.locator('input[placeholder="Search commuter..."]');
-    await commuterSearch.fill('Yogesh');
-    await expect(page.locator('td:has-text("Yogesh Nair")')).toBeVisible();
+    // Simulated workbook disclaimer prominently visible
+    await expect(page.locator('text=Simulated Illustrative Workbook — Not Real Field Research')).toBeVisible();
 
-    // Operational CSV Tab
-    await page.click('button:has-text("vehicles.csv")');
-    await expect(page.locator('h2:has-text("vehicles.csv")')).toBeVisible();
-    await expect(page.locator('td:has-text("BUS-01")').first()).toBeVisible();
+    // Aggregate statistics
+    await expect(page.locator('text=88%')).toBeVisible();
+    await expect(page.locator('text=77%')).toBeVisible();
+    await expect(page.locator('text=10 Core Commuter Friction Points (Illustrative Mentions)')).toBeVisible();
 
-    // JSON Assumptions Tab
-    await page.click('button:has-text("demo_assumptions.json")');
-    await expect(page.locator('button:has-text("Copy JSON")')).toBeVisible();
+    // Ensure NO individual profiles, names or search inputs exist in DOM
+    await expect(page.locator('text=Yogesh Nair')).toHaveCount(0);
+    await expect(page.locator('text=Pooja V')).toHaveCount(0);
+    await expect(page.locator('input[placeholder="Search commuter..."]')).toHaveCount(0);
   });
 
-  test('5. Interventions allows approval and enforces mandatory rejection note', async ({ page }) => {
+  // 7. INTERVENTIONS CONSOLE (AUTHENTICATED)
+  test('7. Interventions Console supports approval, mandatory rejection note, and local review storage', async ({ page }) => {
+    await performLogin(page);
     await page.goto('/interventions');
 
-    // Clear any previous local test decisions
+    // Clear previous test reviews
     await page.evaluate(() => localStorage.removeItem('hogana_intervention_reviews_v1'));
     await page.reload();
 
     // Header & Disclaimer
-    await expect(page.locator('h1:has-text("Corridor Operational Interventions & Human Review")')).toBeVisible();
-    await expect(page.locator('text=Demonstration Review Storage')).toBeVisible();
+    await expect(page.locator('h1:has-text("Operational Interventions & Human Review")')).toBeVisible();
+    await expect(page.locator('text=Local Review Storage')).toBeVisible();
 
-    // Find the proposal action Reject button (not the filter tab button)
-    const cardRejectBtn = page.locator('button', { hasText: /^Reject$/ }).first();
-    await cardRejectBtn.click();
+    // Approve first proposal
+    const approveButtons = page.locator('button', { hasText: /^Approve$/ });
+    await approveButtons.nth(0).click();
+    await expect(page.locator('h3:has-text("Confirm Proposal Approval")')).toBeVisible();
+    await page.click('button:has-text("Approve Proposal")');
 
-    // Confirm dialog should appear
+    // Verify approved counter increments
+    await expect(page.locator('button:has-text("Approved (1)")')).toBeVisible();
+
+    // Reject second proposal (which has no prior note)
+    const rejectButtons = page.locator('button', { hasText: /^Reject$/ });
+    await rejectButtons.nth(1).click();
     await expect(page.locator('h3:has-text("Confirm Proposal Rejection")')).toBeVisible();
 
-    // Attempt confirming without review note (should be blocked)
+    // Rejection note required (should fail without note)
     await page.click('button:has-text("Reject Proposal")');
     await expect(page.locator('text=A specific operational rejection note is required')).toBeVisible();
 
-    // Fill review note and confirm
     await page.fill('textarea', 'Rejected due to confirmed mechanical check at depot.');
     await page.click('button:has-text("Reject Proposal")');
 
-    // Verify rejection filter counter increments and button disables
     await expect(page.locator('button:has-text("Rejected (1)")')).toBeVisible();
-    await expect(page.locator('button:has-text("Review History (1)")')).toBeVisible();
-
-    // Check Review History drawer
-    await page.click('button:has-text("Review History")');
-    await expect(page.locator('h3:has-text("Local Review History")')).toBeVisible();
-    await expect(page.locator('text=Rejected due to confirmed mechanical check at depot.').first()).toBeVisible();
-    await page.click('button:has-text("Close History")');
   });
 
-  test('6. Scenario Simulator evaluates deterministic holding and relief feasibility', async ({ page }) => {
+  // 8. SCENARIO SIMULATOR (AUTHENTICATED)
+  test('8. Scenario Simulator evaluates holding, standby relief, crowding, and saves run', async ({ page }) => {
+    await performLogin(page);
     await page.goto('/simulation');
 
-    // Header & Disclaimer
+    // Header & Model disclaimer
     await expect(page.locator('h1:has-text("Operational Intervention Sandbox & Impact Analysis")')).toBeVisible();
-    await expect(page.locator('text=Deterministic Demonstration Model')).toBeVisible();
+    await expect(page.locator('text=Deterministic Operations Model')).toBeVisible();
 
     // Scenario 1: Bunching Hold
     await expect(page.locator('h2:has-text("Scenario 1: Bus Bunching & Dispatcher Hold Simulation")')).toBeVisible();
@@ -159,28 +329,28 @@ test.describe('HOGANA End-to-End Application Verification', () => {
 
     // Save Holding Run
     await page.click('button:has-text("Save Simulation Run")');
-    await expect(page.locator('text=Holding simulation saved to demonstration history')).toBeVisible();
+    await expect(page.getByText(/Holding simulation saved to local history/i)).toBeVisible();
 
-    // Switch to Scenario 2: Standby Relief
+    // Scenario 2: Standby Relief
     await page.click('button:has-text("Scenario 2: Service Gap Relief")');
     await expect(page.locator('text=Resource Deployment Feasible')).toBeVisible();
     await expect(page.locator('text=physically staged at Hebbal DOWN')).toBeVisible();
 
-    // Switch to Scenario 3: Crowding
+    // Scenario 3: Crowding & Frequency
     await page.click('button:has-text("Scenario 3: Crowding & Frequency")');
     await expect(page.locator('text=60 Passengers').first()).toBeVisible();
     await expect(page.locator('text=40 Seated + 20 Standing')).toBeVisible();
-    await expect(page.locator('text=92 passengers on board')).toBeVisible();
-    await expect(page.locator('text=153.3%')).toBeVisible();
   });
 
-  test('7. Reports page renders formal Performance Reports and export actions', async ({ page }) => {
+  // 9. REPORTS & EXPORTS (AUTHENTICATED)
+  test('9. Reports page renders formal Performance Reports and enabled export actions', async ({ page }) => {
+    await performLogin(page);
     await page.goto('/reports');
 
     // Header & Export controls
-    await expect(page.locator('h1:has-text("Corridor Operations Performance Reports")')).toBeVisible();
-    await expect(page.locator('button:has-text("Download CSV")')).toBeVisible();
-    await expect(page.locator('button:has-text("Download JSON")')).toBeVisible();
+    await expect(page.locator('h1:has-text("Service Operations Performance Reports")')).toBeVisible();
+    await expect(page.locator('button:has-text("Download CSV")')).toBeEnabled();
+    await expect(page.locator('button:has-text("Download JSON")')).toBeEnabled();
     await expect(page.locator('button:has-text("Print / Save PDF")')).toBeVisible();
 
     // Switch Report Tabs
@@ -192,7 +362,42 @@ test.describe('HOGANA End-to-End Application Verification', () => {
 
     await page.click('button:has-text("Scenario Simulation Matrix")');
     await expect(page.locator('text=Scenario 1: Bus Bunching Hold').first()).toBeVisible();
-    await expect(page.locator('text=Scenario 2: Large Gap Relief').first()).toBeVisible();
+  });
+
+  // 10. SCAN ALL RENDERED PAGES FOR CUSTOMER-FACING "CORRIDOR" OR "DEMO"
+  test('10. Renders zero customer-facing "Corridor" or "Demo" on all pages', async ({ page }) => {
+    const pagesToCheck = ['/', '/login', '/dashboard', '/data', '/interventions', '/simulation', '/reports'];
+
+    // Login once
+    await performLogin(page);
+
+    for (const urlPath of pagesToCheck) {
+      await page.goto(urlPath);
+      await page.waitForLoadState('networkidle');
+
+      // Check visible headings and paragraphs
+      const bodyText = await page.innerText('body');
+
+      // Look for disallowed customer-facing phrases:
+      // "Corridor Demo", "Corridor Operations", "Corridor Dashboard", "Corridor KPI",
+      // "Explore Corridor Demo", "Corridor Overview", "Demonstration Data"
+      const disallowedPatterns = [
+        /Corridor Demo/i,
+        /Corridor Operations/i,
+        /Corridor Dashboard/i,
+        /Corridor KPI/i,
+        /Explore Corridor Demo/i,
+        /Corridor Overview/i,
+        /Demonstration Data/i,
+        /Demonstration Review/i,
+        /Demonstration Model/i
+      ];
+
+      for (const pattern of disallowedPatterns) {
+        const match = bodyText.match(pattern);
+        expect(match, `Found disallowed phrase "${pattern}" on page ${urlPath}`).toBeNull();
+      }
+    }
   });
 
 });

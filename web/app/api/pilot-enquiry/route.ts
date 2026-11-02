@@ -95,7 +95,22 @@ export async function POST(request: Request) {
       }
     }
 
-    // When no external webhook is configured in environment, persist to local demonstration store
+    // In production, require an explicit webhook or database destination to avoid ephemeral bundle writes
+    const isProduction = process.env.NODE_ENV === 'production';
+    const allowLocalDemo = process.env.ALLOW_LOCAL_DEMO_ENQUIRIES === 'true';
+
+    if (isProduction && !allowLocalDemo) {
+      return NextResponse.json(
+        {
+          success: false,
+          code: 'DESTINATION_NOT_CONFIGURED',
+          message: 'Pilot enquiry delivery target is not configured. In production, a persistent PILOT_ENQUIRY_WEBHOOK_URL is required to record enquiries.'
+        },
+        { status: 503 }
+      );
+    }
+
+    // Safe local-only demonstration store for development and automated testing
     try {
       const candidates = [
         path.resolve(process.cwd(), 'data', 'research', 'pilot_enquiries.json'),
@@ -124,16 +139,25 @@ export async function POST(request: Request) {
 
       existing.unshift(enquiryRecord);
       await fs.writeFile(targetPath, JSON.stringify(existing.slice(0, 50), null, 2), 'utf8');
-    } catch (fsErr) {
-      console.warn('Local file persistence note:', fsErr);
-    }
 
-    return NextResponse.json({
-      success: true,
-      mode: 'demonstration_store',
-      enquiryId: enquiryRecord.id,
-      message: 'Enquiry received. Logged to demonstration store (PILOT_ENQUIRY_WEBHOOK_URL is not set in environment).'
-    });
+      return NextResponse.json({
+        success: true,
+        mode: 'demonstration_store',
+        enquiryId: enquiryRecord.id,
+        message: 'Enquiry received. Logged to local demonstration store for development/testing.'
+      });
+    } catch (fsErr: unknown) {
+      console.error('Local file persistence failed:', fsErr);
+      const msg = fsErr instanceof Error ? fsErr.message : 'Filesystem write error';
+      return NextResponse.json(
+        {
+          success: false,
+          code: 'PERSISTENCE_FAILED',
+          message: `Failed to persist enquiry to local store: ${msg}`
+        },
+        { status: 500 }
+      );
+    }
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : 'Unknown server error processing enquiry';
     return NextResponse.json(

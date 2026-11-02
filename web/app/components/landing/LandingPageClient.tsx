@@ -1,24 +1,47 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
-  Bus,
   ArrowRight,
   Clock,
-  Users,
-  AlertTriangle,
   CheckCircle2,
   ChevronDown,
   Send,
   MapPin,
   ExternalLink,
-  ShieldAlert
+  ShieldAlert,
+  Menu,
+  X,
+  Sliders,
+  FileText,
+  Database,
+  LogIn,
+  LogOut,
+  User,
+  Users,
+  Bus,
+  AlertTriangle
 } from "lucide-react";
 import Button from "../ui/Button";
+import HoganaBrand from "../ui/HoganaBrand";
+
+interface SessionUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
 
 export default function LandingPageClient() {
-  // Feature demo preview tab
+  // Mobile navigation drawer state
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // User session state
+  const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Feature preview tab
   const [activeFeatureTab, setActiveFeatureTab] = useState<"dashboard" | "interventions" | "simulation">("dashboard");
 
   // Pilot enquiry form state
@@ -37,6 +60,36 @@ export default function LandingPageClient() {
 
   // FAQ accordion state
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function checkSession() {
+      try {
+        const res = await fetch("/api/auth/session");
+        const data = await res.json().catch(() => ({}));
+        if (isMounted && data.authenticated && data.user) {
+          setSessionUser(data.user);
+        }
+      } catch {
+        // guest mode
+      }
+    }
+    checkSession();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleSignOut = async () => {
+    setIsLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      setSessionUser(null);
+      setIsLoggingOut(false);
+      window.location.reload();
+    }
+  };
 
   const handleEnquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,73 +145,229 @@ export default function LandingPageClient() {
   const faqItems = [
     {
       q: "What data does HOGANA require from a transit agency?",
-      a: "HOGANA operates on standard GTFS or GTFS-Realtime feeds: static route schedules, stop sequences, and periodic AVL/GPS position telemetry. Passenger load observations (APC) are optional but enable occupancy threshold tracking."
+      a: "In planned pilot deployments, HOGANA is designed to ingest standard GTFS schedule tables and periodic GTFS-Realtime or AVL telemetry feeds, subject to authorised agency data agreements. Passenger load observations (APC) are optional but enable occupancy threshold tracking."
     },
     {
       q: "Does HOGANA replace our existing CAD/AVL or dispatch software?",
-      a: "No. HOGANA is designed as an operational intelligence and decision-support layer that integrates alongside existing dispatch infrastructure. It computes headway regularity, bunching physics, and relief feasibility to empower human controllers."
+      a: "No. HOGANA is designed as an operational intelligence and decision-support layer that operates alongside existing dispatch systems. It computes headway regularity, bunching physics, and relief feasibility to empower human controllers."
     },
     {
-      q: "How does HOGANA prevent bus bunching before it occurs?",
-      a: "By monitoring trailing separation at critical control stops in real time. When headway degrades below the corridor bunching threshold, HOGANA calculates the exact feasible hold duration (up to the maximum allowable delay) to restore scheduled spacing."
+      q: "How does HOGANA address bus bunching before it escalates?",
+      a: "By monitoring trailing separation at critical control stops along the service area. When headway drops below the bunching threshold, HOGANA calculates the feasible hold duration (capped at maximum allowable delay) to restore scheduled spacing."
     },
     {
       q: "Is HOGANA currently deployed on live BMTC systems?",
-      a: "No. The live demonstration is calibrated strictly on approved synthetic demonstration data for Bengaluru's Silk Board ↔ Hebbal corridor (10 March 2025). It is designed to demonstrate operational capabilities for transit agency pilot evaluations."
+      a: "No. The illustrative platform is calibrated strictly on approved synthetic data for Bengaluru's Silk Board–Hebbal service area (10 March 2025). Direct live integrations with BMTC dispatch systems are subject to future pilot agreements and authorised data exchange."
     },
     {
       q: "How long does an agency pilot take to set up?",
-      a: "A structured pilot typically runs over 6 weeks: Week 1-2 for GTFS and telemetry feed validation, Week 3-4 for corridor baseline headway auditing, and Week 5-6 for simulated intervention evaluation with control room dispatchers."
+      a: "A structured pilot typically runs over 6 weeks: Week 1-2 for planned GTFS and telemetry feed validation, Week 3-4 for baseline headway auditing, and Week 5-6 for simulated intervention evaluation with control room dispatchers."
     }
   ];
 
   return (
     <div className="min-h-screen bg-[#F5F7FA] text-[#12233F] font-sans selection:bg-[#EAF4F7] selection:text-[#0F8278]">
-      {/* 1. PUBLIC MARKETING NAVBAR */}
+      {/* 1. PUBLIC MARKETING NAVBAR WITH ACCESSIBLE MOBILE MENU & AUTH CONTROLS */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#DCE5ED]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-[#0F8278] flex items-center justify-center text-white shadow-xs">
-              <Bus className="h-5 w-5" />
-            </div>
-            <div>
-              <span className="text-xl font-bold tracking-tight text-[#12233F]">HOGANA</span>
-              <span className="hidden sm:inline-block ml-2 text-xs font-semibold uppercase tracking-wider text-[#0F8278] bg-[#EAF4F7] border border-[#0F8278]/25 px-2 py-0.5 rounded">
-                Mobility Intelligence
-              </span>
-            </div>
-          </div>
+          {/* Unified Branding Link navigating to / */}
+          <HoganaBrand variant="light" showTagline showLocation />
 
+          {/* Desktop Nav Links */}
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
             <a href="#problem" className="hover:text-[#0F8278] transition-colors">The Problem</a>
             <a href="#how-it-works" className="hover:text-[#0F8278] transition-colors">How It Works</a>
             <a href="#features" className="hover:text-[#0F8278] transition-colors">Capabilities</a>
-            <a href="#corridor" className="hover:text-[#0F8278] transition-colors">Corridor Demo</a>
-            <a href="#pilot" className="hover:text-[#0F8278] transition-colors">Pilot Programme</a>
+            <a href="#service-area" className="hover:text-[#0F8278] transition-colors">Service Area</a>
+            <a href="#pilot" className="hover:text-[#0F8278] transition-colors">Pilot Framework</a>
             <a href="#faq" className="hover:text-[#0F8278] transition-colors">FAQ</a>
           </nav>
 
-          <div className="flex items-center gap-3">
-            <a
-              href="#pilot-enquiry"
-              className="hidden sm:inline-flex text-xs font-semibold text-[#12233F] hover:text-[#0F8278] px-3.5 py-2 rounded-lg border border-[#DCE5ED] bg-white hover:bg-[#F5F7FA] transition-colors"
-            >
-              Discuss a Pilot
-            </a>
+          {/* Desktop CTAs & Authentication Controls */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {sessionUser ? (
+              <div className="hidden sm:flex items-center gap-2">
+                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#EAF4F7] text-xs font-semibold text-[#12233F] border border-[#0F8278]/20">
+                  <User className="h-3.5 w-3.5 text-[#0F8278]" />
+                  <span>{sessionUser.name}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  disabled={isLoggingOut}
+                  className="text-xs font-semibold text-rose-700 hover:text-rose-800 px-3 py-2 rounded-lg border border-rose-200 bg-white hover:bg-rose-50 transition-colors"
+                >
+                  {isLoggingOut ? "..." : "Sign out"}
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#12233F] hover:text-[#0F8278] px-3.5 py-2 rounded-lg border border-[#DCE5ED] bg-white hover:bg-[#F5F7FA] transition-colors"
+              >
+                <LogIn className="h-3.5 w-3.5 text-[#0F8278]" />
+                <span>Sign in</span>
+              </Link>
+            )}
+
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-white bg-[#0F8278] hover:bg-[#0c6961] px-4 py-2 rounded-lg shadow-xs transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-white bg-[#0F8278] hover:bg-[#0c6961] px-3.5 sm:px-4 py-2 rounded-lg shadow-xs transition-colors"
             >
-              <span>Explore Corridor Demo</span>
+              <span>Explore Operations</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
+
+            {/* Mobile Menu Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation-drawer"
+              aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+              className="md:hidden p-2 rounded-lg border border-[#DCE5ED] text-slate-700 hover:text-[#0F8278] hover:bg-[#F5F7FA] focus:outline-none focus:ring-2 focus:ring-[#0F8278]"
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
           </div>
         </div>
+
+        {/* Accessible Mobile Navigation Drawer */}
+        {mobileMenuOpen && (
+          <div
+            id="mobile-navigation-drawer"
+            className="md:hidden border-t border-[#DCE5ED] bg-white px-4 pt-3 pb-6 space-y-4 shadow-lg animate-in slide-in-from-top-2 duration-150"
+          >
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 block">
+                Overview &amp; Features
+              </span>
+              <a
+                href="#problem"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-lg text-sm font-medium text-slate-800 hover:bg-[#EAF4F7] hover:text-[#0F8278]"
+              >
+                The Operations Problem
+              </a>
+              <a
+                href="#how-it-works"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-lg text-sm font-medium text-slate-800 hover:bg-[#EAF4F7] hover:text-[#0F8278]"
+              >
+                How HOGANA Works
+              </a>
+              <a
+                href="#features"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-lg text-sm font-medium text-slate-800 hover:bg-[#EAF4F7] hover:text-[#0F8278]"
+              >
+                Platform Capabilities
+              </a>
+              <a
+                href="#service-area"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-lg text-sm font-medium text-slate-800 hover:bg-[#EAF4F7] hover:text-[#0F8278]"
+              >
+                Silk Board–Hebbal, Bengaluru
+              </a>
+              <a
+                href="#pilot"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-lg text-sm font-medium text-slate-800 hover:bg-[#EAF4F7] hover:text-[#0F8278]"
+              >
+                Pilot Framework
+              </a>
+              <a
+                href="#faq"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-lg text-sm font-medium text-slate-800 hover:bg-[#EAF4F7] hover:text-[#0F8278]"
+              >
+                Frequently Asked Questions
+              </a>
+            </div>
+
+            <div className="pt-2 border-t border-[#DCE5ED] space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 block">
+                Operational Application
+              </span>
+              <Link
+                href="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-800 hover:bg-[#EAF4F7] hover:text-[#0F8278]"
+              >
+                <Clock className="h-4 w-4 text-[#0F8278]" />
+                <span>Dashboard</span>
+              </Link>
+              <Link
+                href="/data"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-800 hover:bg-[#EAF4F7] hover:text-[#0F8278]"
+              >
+                <Database className="h-4 w-4 text-[#0F8278]" />
+                <span>Data Centre &amp; Audit</span>
+              </Link>
+              <Link
+                href="/interventions"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-800 hover:bg-[#EAF4F7] hover:text-[#0F8278]"
+              >
+                <ShieldAlert className="h-4 w-4 text-[#0F8278]" />
+                <span>Interventions Console</span>
+              </Link>
+              <Link
+                href="/simulation"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-800 hover:bg-[#EAF4F7] hover:text-[#0F8278]"
+              >
+                <Sliders className="h-4 w-4 text-[#0F8278]" />
+                <span>Scenario Simulation</span>
+              </Link>
+              <Link
+                href="/reports"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-800 hover:bg-[#EAF4F7] hover:text-[#0F8278]"
+              >
+                <FileText className="h-4 w-4 text-[#0F8278]" />
+                <span>Shift Handover Reports</span>
+              </Link>
+            </div>
+
+            <div className="pt-2 border-t border-[#DCE5ED] flex flex-col gap-2">
+              {sessionUser ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleSignOut();
+                  }}
+                  className="w-full text-center text-xs font-semibold text-rose-700 py-2.5 rounded-lg border border-rose-200 bg-rose-50"
+                >
+                  Sign out ({sessionUser.name})
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-center text-xs font-semibold text-[#12233F] py-2.5 rounded-lg border border-[#DCE5ED] bg-white hover:bg-[#F5F7FA]"
+                >
+                  Sign In to Account
+                </Link>
+              )}
+              <Link
+                href="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-center text-xs font-semibold text-white py-2.5 rounded-lg bg-[#0F8278] hover:bg-[#0c6961]"
+              >
+                Explore Operations
+              </Link>
+            </div>
+          </div>
+        )}
       </header>
 
-      {/* SYNTHETIC DEMONSTRATION DISCLOSURE BANNER */}
+      {/* SYNTHETIC DATA DISCLOSURE BANNER */}
       <div className="bg-amber-50 border-b border-[#D97706]/30 px-4 py-2 text-center text-xs text-[#D97706] font-medium">
-        <span>Synthetic demonstration platform — calibrated for Bengaluru’s Silk Board ↔ Hebbal corridor. Not connected to live BMTC dispatch systems.</span>
+        <span>Illustrative synthetic operational data — not connected to live BMTC systems.</span>
       </div>
 
       {/* SECTION 1: HERO (WHITE BACKGROUND) */}
@@ -167,7 +376,7 @@ export default function LandingPageClient() {
           <div className="text-center max-w-4xl mx-auto space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAF4F7] border border-[#DCE5ED] text-xs font-semibold text-[#12233F]">
               <span className="h-2 w-2 rounded-full bg-[#0F8278] animate-pulse"></span>
-              <span>Bengaluru Outer Ring Road Corridor | 19.8 km Demonstration</span>
+              <span>Bengaluru Outer Ring Road Service Area | 19.8 km Analysis</span>
             </div>
 
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[#12233F] leading-[1.15]">
@@ -184,7 +393,7 @@ export default function LandingPageClient() {
                 href="/dashboard"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm sm:text-base text-white bg-[#0F8278] hover:bg-[#0c6961] shadow-sm transition-all"
               >
-                <span>Explore Corridor Demo</span>
+                <span>Explore Operations</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <a
@@ -245,7 +454,7 @@ export default function LandingPageClient() {
               </div>
               <h3 className="text-lg font-bold text-[#12233F]">Cascading Service Voids</h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                A single cancelled trip or terminal bottleneck creates an unmanaged 24-minute service void. Waiting passengers accumulate along the entire corridor, turning scheduled 12-minute headways into chaotic crowding.
+                A single cancelled trip or terminal bottleneck creates an unmanaged 24-minute service void. Waiting passengers accumulate along the entire service area, turning scheduled 12-minute headways into chaotic crowding.
               </p>
             </div>
 
@@ -273,7 +482,7 @@ export default function LandingPageClient() {
               The Instability of Unregulated Bus Headways
             </h2>
             <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
-              Without active control-point holding, equal bus spacing is mathematically unstable. Minor traffic friction amplifies into full corridor collapse.
+              Without active control-point holding, equal bus spacing is mathematically unstable. Minor traffic friction amplifies into full service breakdown.
             </p>
           </div>
 
@@ -313,15 +522,15 @@ export default function LandingPageClient() {
         </div>
       </section>
 
-      {/* SECTION 4: FOUR OPERATIONAL ENGINES (BACKGROUND COLOR) */}
-      <section id="how-it-works" className="py-16 sm:py-24 bg-[#F5F7FA] border-b border-[#DCE5ED]">
+      {/* SECTION 4: PLATFORM ARCHITECTURE (SOFT BLUE BACKGROUND) */}
+      <section id="how-it-works" className="py-16 sm:py-24 bg-[#EAF4F7] border-b border-[#DCE5ED]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center space-y-3 mb-14">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#0F8278] bg-[#EAF4F7] border border-[#0F8278]/25 px-2.5 py-1 rounded">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#0F8278] bg-white border border-[#DCE5ED] px-2.5 py-1 rounded">
               The HOGANA Architecture
             </span>
             <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-[#12233F]">
-              Four Operational Engines for Real-Time Decision Support
+              Four Operational Engines for Operations Decision Support
             </h2>
             <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
               HOGANA processes timetable schedules, vehicle GPS traces, fleet allocations, and boarding observations through four synchronized operational engines.
@@ -363,74 +572,74 @@ export default function LandingPageClient() {
               <div className="h-10 w-10 rounded-xl bg-[#12233F] text-white flex items-center justify-center">
                 <Users className="h-5 w-5 text-[#0F8278]" />
               </div>
-              <h3 className="font-bold text-[#12233F] text-base">Crowding &amp; Capacity</h3>
+              <h3 className="font-bold text-[#12233F] text-base">Crowding &amp; Capacity Audit</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Tracks occupancy against 60-passenger design capacity. Evaluates policy eligibility for peak timetable frequency increases.
+                Monitors passenger load against 60-passenger design capacity (40 seated + 20 standing). Enforces 3-consecutive-stop frequency rules.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* SECTION 5: PRODUCT FEATURE DEMONSTRATIONS (WHITE BACKGROUND) */}
+      {/* SECTION 5: PRODUCT CAPABILITIES (WHITE BACKGROUND) */}
       <section id="features" className="py-16 sm:py-24 bg-white border-b border-[#DCE5ED]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center space-y-3 mb-10">
             <span className="text-xs font-bold uppercase tracking-wider text-[#0F8278] bg-[#EAF4F7] border border-[#0F8278]/25 px-2.5 py-1 rounded">
-              Platform Preview
+              Interactive Capabilities
             </span>
             <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-[#12233F]">
-              Interactive Tools Built for Operational Dispatchers
+              Explore HOGANA in Action
             </h2>
             <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
-              Explore the five integrated application workflows designed for real transit control rooms.
+              Explore how HOGANA powers operations control, intervention workflows, and scenario analysis.
             </p>
           </div>
 
-          {/* Feature switcher tabs */}
+          {/* Interactive Feature Tabs */}
           <div className="flex justify-center mb-8">
-            <div className="inline-flex p-1 rounded-xl bg-[#EAF4F7] border border-[#DCE5ED] gap-1 text-xs sm:text-sm font-semibold">
+            <div className="inline-flex p-1 bg-[#F5F7FA] rounded-xl border border-[#DCE5ED]">
               <button
                 onClick={() => setActiveFeatureTab("dashboard")}
-                className={`px-4 py-2 rounded-lg transition-all ${
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                   activeFeatureTab === "dashboard"
-                    ? "bg-[#0F8278] text-white shadow-xs"
-                    : "text-[#12233F] hover:text-[#0F8278]"
+                    ? "bg-white text-[#12233F] shadow-xs"
+                    : "text-slate-600 hover:text-[#12233F]"
                 }`}
               >
-                1. Operations Dashboard
+                Operations Dashboard
               </button>
               <button
                 onClick={() => setActiveFeatureTab("interventions")}
-                className={`px-4 py-2 rounded-lg transition-all ${
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                   activeFeatureTab === "interventions"
-                    ? "bg-[#0F8278] text-white shadow-xs"
-                    : "text-[#12233F] hover:text-[#0F8278]"
+                    ? "bg-white text-[#12233F] shadow-xs"
+                    : "text-slate-600 hover:text-[#12233F]"
                 }`}
               >
-                2. Dispatcher Interventions
+                Standby Relief Dispatch
               </button>
               <button
                 onClick={() => setActiveFeatureTab("simulation")}
-                className={`px-4 py-2 rounded-lg transition-all ${
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                   activeFeatureTab === "simulation"
-                    ? "bg-[#0F8278] text-white shadow-xs"
-                    : "text-[#12233F] hover:text-[#0F8278]"
+                    ? "bg-white text-[#12233F] shadow-xs"
+                    : "text-slate-600 hover:text-[#12233F]"
                 }`}
               >
-                3. Scenario Sandbox
+                Passenger Crowding
               </button>
             </div>
           </div>
 
-          {/* Interactive Feature Mockup Display */}
-          <div className="bg-[#F5F7FA] rounded-2xl border border-[#DCE5ED] shadow-sm p-6 sm:p-8 max-w-5xl mx-auto">
+          {/* Feature Showcase Box */}
+          <div className="bg-[#F5F7FA] rounded-2xl border border-[#DCE5ED] p-6 sm:p-10 shadow-xs max-w-4xl mx-auto">
             {activeFeatureTab === "dashboard" && (
               <div className="space-y-6 animate-in fade-in duration-200">
                 <div className="flex items-center justify-between pb-4 border-b border-[#DCE5ED]">
                   <div>
-                    <h3 className="text-lg font-bold text-[#12233F]">Corridor Operations Command Center</h3>
-                    <p className="text-xs text-slate-500">Live replay at 08:24:00 (Morning Peak) — Marathahalli UP Monitoring Point</p>
+                    <h3 className="text-lg font-bold text-[#12233F]">Service Operations Command Center</h3>
+                    <p className="text-xs text-slate-500">Service area snapshot at 08:24:00 (Morning Peak) — Marathahalli UP Monitoring Point</p>
                   </div>
                   <Link
                     href="/dashboard"
@@ -442,42 +651,38 @@ export default function LandingPageClient() {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div className="p-3.5 rounded-xl border border-[#DCE5ED] bg-white">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Operated Trips</span>
-                    <span className="text-xl font-bold font-mono text-[#12233F] block mt-1">77 / 86</span>
-                    <span className="text-[11px] text-emerald-700 font-medium">89.5% Fulfillment</span>
+                  <div className="bg-white p-4 rounded-xl border border-[#DCE5ED]">
+                    <span className="text-[11px] font-bold uppercase text-slate-500 block">Fulfilment</span>
+                    <span className="text-xl sm:text-2xl font-extrabold text-[#12233F] mt-1 block">89.5%</span>
+                    <span className="text-[11px] text-slate-500">77 of 86 trips operated</span>
                   </div>
-                  <div className="p-3.5 rounded-xl border border-[#DCE5ED] bg-white">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Headway CV</span>
-                    <span className="text-xl font-bold font-mono text-[#12233F] block mt-1">0.31</span>
-                    <span className="text-[11px] text-[#0F8278] font-medium">Acceptable Irregularity</span>
+                  <div className="bg-white p-4 rounded-xl border border-[#DCE5ED]">
+                    <span className="text-[11px] font-bold uppercase text-slate-500 block">On-Time Performance</span>
+                    <span className="text-xl sm:text-2xl font-extrabold text-[#D97706] mt-1 block">57.1%</span>
+                    <span className="text-[11px] text-slate-500">±120s arrival adherence</span>
                   </div>
-                  <div className="p-3.5 rounded-xl border border-[#DC2626]/30 bg-red-50/30">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#DC2626]">Bunching Alert</span>
-                    <span className="text-xl font-bold font-mono text-[#DC2626] block mt-1">75s Sep</span>
-                    <span className="text-[11px] text-[#DC2626] font-medium">&lt; 120s Threshold</span>
+                  <div className="bg-white p-4 rounded-xl border border-[#DCE5ED]">
+                    <span className="text-[11px] font-bold uppercase text-slate-500 block">Active Bunching</span>
+                    <span className="text-xl sm:text-2xl font-extrabold text-[#DC2626] mt-1 block">75s Sep</span>
+                    <span className="text-[11px] text-[#DC2626] font-medium">Critical (&lt; 120s limit)</span>
                   </div>
-                  <div className="p-3.5 rounded-xl border border-[#D97706]/30 bg-amber-50/30">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#D97706]">Peak Occupancy</span>
-                    <span className="text-xl font-bold font-mono text-[#D97706] block mt-1">153.3%</span>
-                    <span className="text-[11px] text-[#D97706] font-medium">92 Pax / 60 Cap</span>
+                  <div className="bg-white p-4 rounded-xl border border-[#DCE5ED]">
+                    <span className="text-[11px] font-bold uppercase text-slate-500 block">Peak Crowding</span>
+                    <span className="text-xl sm:text-2xl font-extrabold text-[#DC2626] mt-1 block">153.3%</span>
+                    <span className="text-[11px] text-slate-500">92 pax on board</span>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl border border-[#DC2626]/40 bg-red-50/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-2.5">
-                    <ShieldAlert className="h-5 w-5 text-[#DC2626] shrink-0" />
-                    <div>
-                      <strong className="text-[#12233F] font-bold block">Active Bunching Incident at Marathahalli UP</strong>
-                      <span className="text-slate-700">Trailing BUS-07 arrived 75s after BUS-06 departed. Advisory: 300s hold recommended.</span>
-                    </div>
+                <div className="p-4 rounded-xl bg-white border border-[#DCE5ED] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#12233F]">Active Control-Point Advisory</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#0F8278] bg-[#EAF4F7] px-2 py-0.5 rounded">
+                      Human Review Required
+                    </span>
                   </div>
-                  <Link
-                    href="/interventions"
-                    className="px-3.5 py-1.5 rounded-lg bg-[#DC2626] hover:bg-[#b91c1c] text-white font-semibold text-xs shrink-0"
-                  >
-                    Review Proposal
-                  </Link>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Trailing bus BUS-07 is 75s behind BUS-06 at Marathahalli UP. Holding BUS-07 for 300s expands departure headway to 375s, clearing the bunching condition.
+                  </p>
                 </div>
               </div>
             )}
@@ -486,8 +691,8 @@ export default function LandingPageClient() {
               <div className="space-y-6 animate-in fade-in duration-200">
                 <div className="flex items-center justify-between pb-4 border-b border-[#DCE5ED]">
                   <div>
-                    <h3 className="text-lg font-bold text-[#12233F]">Human-in-the-Loop Dispatcher Workflow</h3>
-                    <p className="text-xs text-slate-500">Advisory intervention proposals with evidence, threshold metrics, and mandatory notes</p>
+                    <h3 className="text-lg font-bold text-[#12233F]">Standby Relief Dispatch Feasibility</h3>
+                    <p className="text-xs text-slate-500">Evening Peak Replay (18:15:00) — Hebbal DOWN Terminal</p>
                   </div>
                   <Link
                     href="/interventions"
@@ -498,40 +703,22 @@ export default function LandingPageClient() {
                   </Link>
                 </div>
 
-                <div className="p-5 rounded-xl border border-[#DCE5ED] bg-white shadow-2xs space-y-4">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-xs font-bold font-mono text-[#0F8278] bg-[#EAF4F7] border border-[#0F8278]/30 px-2 py-0.5 rounded">
-                      PROPOSAL: REC-HOLD-0824
-                    </span>
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#DC2626] bg-red-50 border border-red-200 px-2 py-0.5 rounded">
-                      High Priority Advisory
-                    </span>
+                <div className="p-4 rounded-xl bg-white border border-[#DCE5ED] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#DC2626]">Severe Service Void Detected</span>
+                    <span className="text-xs font-mono font-bold text-[#DC2626]">1,440s (24 min)</span>
                   </div>
-
-                  <h4 className="text-base font-bold text-[#12233F]">
-                    Hold Trailing Bus BUS-07 for 300s at Marathahalli UP Control Point
-                  </h4>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                    <div className="p-2.5 rounded-lg bg-[#F5F7FA] border border-[#DCE5ED]">
-                      <span className="text-slate-500 block">Measured Separation</span>
-                      <span className="font-mono font-bold text-[#DC2626] text-sm">75 seconds</span>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Scheduled trip cancelled due to earlier mechanical failure. Headway exceeds 1.5× nominal threshold (1,080s limit).
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#DCE5ED] text-xs">
+                    <div className="p-2.5 rounded bg-[#F5F7FA]">
+                      <span className="text-slate-500 block">Staged Vehicle</span>
+                      <span className="font-bold text-[#12233F]">BUS-13 Staged at Hebbal DOWN</span>
                     </div>
-                    <div className="p-2.5 rounded-lg bg-[#F5F7FA] border border-[#DCE5ED]">
-                      <span className="text-slate-500 block">Target Headway</span>
-                      <span className="font-mono font-bold text-[#12233F] text-sm">720s (12 min)</span>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-[#F5F7FA] border border-[#DCE5ED]">
-                      <span className="text-slate-500 block">Projected Separation</span>
-                      <span className="font-mono font-bold text-[#0F8278] text-sm">375 seconds</span>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 flex items-center justify-between border-t border-[#DCE5ED] text-xs text-slate-500">
-                    <span>Rejection requires mandatory operational justification. Decisions stored locally.</span>
-                    <div className="flex items-center gap-2">
-                      <span className="px-3 py-1.5 rounded-lg bg-[#F5F7FA] text-[#12233F] border border-[#DCE5ED] font-semibold text-xs">Reject</span>
-                      <span className="px-3.5 py-1.5 rounded-lg bg-[#0F8278] text-white font-semibold text-xs">Approve</span>
+                    <div className="p-2.5 rounded bg-[#F5F7FA]">
+                      <span className="text-slate-500 block">On-Shift Driver</span>
+                      <span className="font-bold text-[#12233F]">CREW-24 (Shift 2: 14:00–22:00)</span>
                     </div>
                   </div>
                 </div>
@@ -542,8 +729,8 @@ export default function LandingPageClient() {
               <div className="space-y-6 animate-in fade-in duration-200">
                 <div className="flex items-center justify-between pb-4 border-b border-[#DCE5ED]">
                   <div>
-                    <h3 className="text-lg font-bold text-[#12233F]">Deterministic Scenario Simulator</h3>
-                    <p className="text-xs text-slate-500">Test holding durations and standby relief feasibility without guessing</p>
+                    <h3 className="text-lg font-bold text-[#12233F]">Crowding &amp; Frequency Analysis Sandbox</h3>
+                    <p className="text-xs text-slate-500">60-Passenger Design Capacity Model (40 Seated + 20 Standing)</p>
                   </div>
                   <Link
                     href="/simulation"
@@ -554,48 +741,17 @@ export default function LandingPageClient() {
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                  <div className="space-y-4">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-700">Interactive Inputs</span>
-                    <div className="space-y-2 p-4 rounded-xl border border-[#DCE5ED] bg-white">
-                      <div className="flex items-center justify-between text-xs font-semibold">
-                        <span className="text-[#12233F]">Hold Duration Slider</span>
-                        <span className="font-mono font-bold text-[#0F8278]">300 seconds</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="0"
-                        max="300"
-                        step="30"
-                        defaultValue="300"
-                        disabled
-                        className="w-full accent-[#0F8278] cursor-not-allowed"
-                      />
-                      <div className="flex justify-between text-[10px] text-slate-400 font-mono">
-                        <span>0s (No Hold)</span>
-                        <span>150s</span>
-                        <span>300s (Max Cap)</span>
-                      </div>
-                    </div>
+                <div className="p-4 rounded-xl bg-white border border-[#DCE5ED] space-y-4">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-[#12233F]">Peak Observed Load</span>
+                    <span className="font-mono font-bold text-[#DC2626]">92 Pax (153.3% Occupancy)</span>
                   </div>
-
-                  <div className="space-y-4">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-700">Deterministic Projection</span>
-                    <div className="p-4 rounded-xl border border-[#0F8278]/30 bg-[#EAF4F7]/40 space-y-2 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Baseline Separation:</span>
-                        <span className="font-mono font-bold text-[#DC2626]">75s</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-600">Projected Separation:</span>
-                        <span className="font-mono font-bold text-[#0F8278]">375s (75s + 300s)</span>
-                      </div>
-                      <div className="flex justify-between border-t border-[#DCE5ED] pt-2 font-semibold">
-                        <span className="text-[#12233F]">Headway Restoration:</span>
-                        <span className="font-mono text-[#0F8278]">52.1% of nominal 720s</span>
-                      </div>
-                    </div>
+                  <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                    <div className="bg-[#DC2626] h-full rounded-full" style={{ width: "100%" }}></div>
                   </div>
+                  <p className="text-xs text-slate-600">
+                    Observed at <strong>Kadubeesanahalli UP</strong> during morning peak. Single isolated spike did not meet the 3-consecutive-stop trigger required for scheduled frequency increase.
+                  </p>
                 </div>
               </div>
             )}
@@ -603,15 +759,15 @@ export default function LandingPageClient() {
         </div>
       </section>
 
-      {/* SECTION 6: SILK BOARD ↔ HEBBAL CORRIDOR DEMONSTRATION (SOFT BLUE BACKGROUND) */}
-      <section id="corridor" className="py-16 sm:py-24 bg-[#EAF4F7] border-b border-[#DCE5ED]">
+      {/* SECTION 6: SILK BOARD–HEBBAL SERVICE AREA (SOFT BLUE BACKGROUND) */}
+      <section id="service-area" className="py-16 sm:py-24 bg-[#EAF4F7] border-b border-[#DCE5ED]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center space-y-3 mb-14">
             <span className="text-xs font-bold uppercase tracking-wider text-[#0F8278] bg-white border border-[#DCE5ED] px-2.5 py-1 rounded">
-              Bengaluru Reference Corridor
+              Bengaluru Reference Service Area
             </span>
             <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-[#12233F]">
-              Outer Ring Road: Silk Board ↔ Hebbal
+              Outer Ring Road: Silk Board–Hebbal, Bengaluru
             </h2>
             <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
               One of India’s most critical arterial transport spines, connecting major tech hubs with dense commuter traffic and heavy peak-hour congestion.
@@ -621,7 +777,7 @@ export default function LandingPageClient() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto mb-10 text-center">
             <div className="p-5 rounded-xl border border-[#DCE5ED] bg-white shadow-xs">
               <span className="text-2xl sm:text-3xl font-extrabold text-[#12233F] font-mono block">19.8 km</span>
-              <span className="text-xs font-medium text-slate-500 mt-1 block">Corridor Length</span>
+              <span className="text-xs font-medium text-slate-500 mt-1 block">Service Area Length</span>
             </div>
             <div className="p-5 rounded-xl border border-[#DCE5ED] bg-white shadow-xs">
               <span className="text-2xl sm:text-3xl font-extrabold text-[#12233F] font-mono block">24 Stops</span>
@@ -639,7 +795,7 @@ export default function LandingPageClient() {
 
           <div className="bg-white rounded-2xl border border-[#DCE5ED] p-6 max-w-4xl mx-auto space-y-4 shadow-xs">
             <h3 className="font-bold text-[#12233F] text-sm uppercase tracking-wider">
-              Corridor Monitoring Anchor Points
+              Service Monitoring Anchor Points
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div className="p-3.5 bg-[#F5F7FA] rounded-lg border border-[#DCE5ED] space-y-1">
@@ -665,7 +821,7 @@ export default function LandingPageClient() {
         </div>
       </section>
 
-      {/* SECTION 7: PILOT PROGRAMME (WHITE BACKGROUND) */}
+      {/* SECTION 7: PILOT FRAMEWORK (WHITE BACKGROUND) */}
       <section id="pilot" className="py-16 sm:py-24 bg-white border-b border-[#DCE5ED]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center space-y-3 mb-14">
@@ -676,7 +832,7 @@ export default function LandingPageClient() {
               6-Week Structured Transit Agency Pilot
             </h2>
             <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
-              Designed for zero-risk validation on a single high-frequency corridor before wide-scale deployment.
+              Designed for zero-risk validation on a single high-frequency service area before wide-scale deployment.
             </p>
           </div>
 
@@ -685,7 +841,7 @@ export default function LandingPageClient() {
               <span className="text-xs font-bold text-[#0F8278] font-mono">PHASE 1: WEEKS 1–2</span>
               <h3 className="text-lg font-bold text-[#12233F]">Telemetry Ingestion &amp; Audit</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Connect agency GTFS schedule tables and vehicle GPS feed. Run automated 56-check data integrity verification to establish baseline reliability.
+                Ingest planned pilot GTFS schedule tables and vehicle telemetry inputs. Run automated 56-check data integrity verification to establish baseline reliability.
               </p>
             </div>
 
@@ -693,7 +849,7 @@ export default function LandingPageClient() {
               <span className="text-xs font-bold text-[#0F8278] font-mono">PHASE 2: WEEKS 3–4</span>
               <h3 className="text-lg font-bold text-[#12233F]">Headway Regularity Profiling</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Map corridor headway coefficients of variation (CV) at peak bottlenecks. Benchmark actual on-time performance (±120s) and service gaps.
+                Map headway coefficients of variation (CV) at peak bottlenecks. Benchmark actual on-time performance (±120s) and service gaps.
               </p>
             </div>
 
@@ -753,10 +909,10 @@ export default function LandingPageClient() {
               Partner with HOGANA
             </span>
             <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-[#12233F]">
-              Discuss a Corridor Pilot
+              Discuss an Agency Pilot
             </h2>
             <p className="text-xs sm:text-sm text-slate-600">
-              Interested in deploying HOGANA on your high-frequency transit corridor? Submit your enquiry below.
+              Interested in deploying HOGANA on your high-frequency transit routes? Submit your enquiry below.
             </p>
           </div>
 
@@ -856,7 +1012,7 @@ export default function LandingPageClient() {
                 onChange={(e) => setFormFleetSize(e.target.value)}
                 className="w-full text-xs p-2.5 rounded-lg border border-[#DCE5ED] bg-white focus:outline-none focus:ring-2 focus:ring-[#0F8278]"
               >
-                <option value="1-50">1 – 50 buses (Corridor trial)</option>
+                <option value="1-50">1 – 50 buses (Service pilot)</option>
                 <option value="51-200">51 – 200 buses (Depot level)</option>
                 <option value="201-1000">201 – 1,000 buses (Division level)</option>
                 <option value="1000+">1,000+ buses (Citywide fleet)</option>
@@ -872,7 +1028,7 @@ export default function LandingPageClient() {
                 rows={4}
                 value={formMessage}
                 onChange={(e) => setFormMessage(e.target.value)}
-                placeholder="Describe your current headway challenges, corridors of interest, or pilot timeline..."
+                placeholder="Describe your current headway challenges, routes of interest, or pilot timeline..."
                 className="w-full text-xs p-2.5 rounded-lg border border-[#DCE5ED] bg-white focus:outline-none focus:ring-2 focus:ring-[#0F8278]"
               />
             </div>
@@ -897,14 +1053,7 @@ export default function LandingPageClient() {
       <footer className="bg-[#12233F] text-slate-400 py-12 border-t border-[#12233F] text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded bg-[#0F8278] flex items-center justify-center text-white font-bold">
-                <Bus className="h-4 w-4" />
-              </div>
-              <span className="text-lg font-bold text-white tracking-tight">HOGANA</span>
-              <span className="text-slate-500">|</span>
-              <span className="text-[#EAF4F7]">Smart Bus Operations &amp; Mobility Intelligence</span>
-            </div>
+            <HoganaBrand variant="dark" showTagline showLocation />
 
             <div className="flex flex-wrap items-center gap-4 text-xs">
               <Link href="/dashboard" className="text-slate-300 hover:text-white">Operations Dashboard</Link>
@@ -917,10 +1066,10 @@ export default function LandingPageClient() {
 
           <div className="pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-slate-400 text-[11px]">
             <p>
-              © 2025–2026 HOGANA. Silk Board ↔ Hebbal Corridor Demonstration. Built for urban transit operations.
+              © 2025–2026 HOGANA. Silk Board–Hebbal, Bengaluru Service Area. Built for urban transit operations.
             </p>
             <p className="text-slate-400">
-              Synthetic demonstration dataset — not an official BMTC or government deployment.
+              Illustrative synthetic operational data — not connected to live BMTC systems.
             </p>
           </div>
         </div>

@@ -4,7 +4,7 @@ import InterventionsClient from "./InterventionsClient";
 
 export const metadata = {
   title: "Interventions — HOGANA Smart Bus Operations",
-  description: "Dispatcher advisory intervention proposals and human review workflow for Silk Board ↔ Hebbal corridor."
+  description: "Dispatcher advisory intervention proposals and human review workflow for Silk Board–Hebbal, Bengaluru service area."
 };
 
 export default async function InterventionsPage() {

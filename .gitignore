@@ -43,3 +43,7 @@ next-env.d.ts
 
 # Delivery archives
 *.zip
+
+# Scratch artifacts
+scratch/
+**/scratch/

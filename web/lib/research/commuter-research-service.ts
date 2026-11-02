@@ -8,9 +8,11 @@ import 'server-only';
  * 
  * Guarantees:
  * 1. Server-Only Protection: Marked with import 'server-only'.
- * 2. Kept strictly separate from the 9 operational demo files.
+ * 2. Kept strictly separate from the 9 operational demo files in data/demo/.
  * 3. Never used to compute GPS positions, bus headways, occupancy, or demand.
- * 4. Transparently discloses that all 100 profiles are simulated illustrative data.
+ * 4. Transparently discloses that the workbook is simulated and not real field research.
+ * 5. Strictly returns AGGREGATE statistics only — zero individual respondent profiles,
+ *    personal names, or individual search data are sent to the client browser.
  */
 
 import fs from 'fs/promises';
@@ -32,34 +34,20 @@ export interface TravelWindowDistribution {
   offPeak: number;
 }
 
-export interface CommuterProfile {
-  respondentId: number;
-  name: string;
-  age: number;
-  gender: string;
-  occupation: string;
-  busFare: string;
-  travelFrequency: string;
-  usualTravelTime: string;
-  distanceKm: string;
-  problemsFaced: string;
-  busFoundVacant: string;
-}
-
 export interface CommuterResearchData {
   provenance: string;
   datasetTitle: string;
   methodology: string;
   sampleSize: number;
   disclaimer: string;
+  isSimulatedWorkbook: boolean;
   metrics: {
-    sampleProfiles: number;
+    totalIllustrativeProfiles: number;
     peakTravelPatternPct: number;
     rarelyOrNeverVacantPct: number;
     travelWindowDistribution: TravelWindowDistribution;
   };
   commuterPainPoints: CommuterPainPoint[];
-  sampleProfiles: CommuterProfile[];
 }
 
 export interface CommuterResearchResponse {
@@ -101,15 +89,33 @@ export async function getCommuterResearchData(): Promise<CommuterResearchRespons
     const rawContent = await fs.readFile(filePath, 'utf8');
     const parsed = JSON.parse(rawContent);
 
+    // Provide ONLY aggregated figures. Do NOT include individual respondent records or names.
     cachedResearchData = {
-      provenance: parsed._provenance,
-      datasetTitle: parsed.datasetTitle,
-      methodology: parsed.methodology,
-      sampleSize: parsed.sampleSize,
-      disclaimer: parsed.disclaimer,
-      metrics: parsed.metrics,
-      commuterPainPoints: parsed.commuterPainPoints,
-      sampleProfiles: parsed.sampleProfiles || []
+      provenance: parsed._provenance || 'Simulated illustrative workbook calibrated for Silk Board–Hebbal, Bengaluru service area.',
+      datasetTitle: parsed.datasetTitle || 'Silk Board–Hebbal, Bengaluru Commuter Experience Case Study',
+      methodology: parsed.methodology || 'Simulated cross-sectional commuter archetype modeling across 100 representative daily bus commuter profiles.',
+      sampleSize: parsed.sampleSize || 100,
+      disclaimer: 'This workbook is a simulated case study and not real field research. It is provided for operational context and passenger perception analysis only. It is NOT used to calculate vehicle GPS coordinates, timetable headways, passenger loads, bus occupancy, or operational demand.',
+      isSimulatedWorkbook: true,
+      metrics: {
+        totalIllustrativeProfiles: parsed.metrics?.sampleProfiles ?? 100,
+        peakTravelPatternPct: parsed.metrics?.peakTravelPatternPct ?? 88,
+        rarelyOrNeverVacantPct: parsed.metrics?.rarelyOrNeverVacantPct ?? 77,
+        travelWindowDistribution: parsed.metrics?.travelWindowDistribution ?? {
+          morningPeak: 28,
+          eveningPeak: 22,
+          bothPeaks: 38,
+          offPeak: 12
+        }
+      },
+      commuterPainPoints: (parsed.commuterPainPoints || []).map((cp: CommuterPainPoint) => ({
+        rank: cp.rank,
+        category: cp.category,
+        problem: cp.problem,
+        mentions: cp.mentions,
+        percentage: cp.percentage,
+        operationalRelevance: cp.operationalRelevance
+      }))
     };
 
     return {

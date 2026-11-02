@@ -61,7 +61,7 @@ export async function getDataCentreData(): Promise<DataCentreResponse> {
         fileName: 'routes.csv',
         fileType: 'csv',
         recordCount: dataset.routes.length,
-        description: 'Single corridor route definition (Silk Board ↔ Hebbal)',
+        description: 'Single transit route definition (Silk Board ↔ Hebbal)',
         primaryKey: 'route_id',
         sourceLabel: dataset.routes[0]?.source_label ?? 'synthetic'
       },
@@ -69,7 +69,7 @@ export async function getDataCentreData(): Promise<DataCentreResponse> {
         fileName: 'stops.csv',
         fileType: 'csv',
         recordCount: dataset.stops.length,
-        description: '24 directional corridor bus stops (12 UP / 12 DOWN)',
+        description: '24 directional service area bus stops (12 UP / 12 DOWN)',
         primaryKey: 'stop_id',
         sourceLabel: dataset.stops[0]?.source_label ?? 'synthetic'
       },
@@ -77,7 +77,7 @@ export async function getDataCentreData(): Promise<DataCentreResponse> {
         fileName: 'scheduled_trips.csv',
         fileType: 'csv',
         recordCount: dataset.scheduledTrips.length,
-        description: '86 planned corridor trip slots (43 UP / 43 DOWN)',
+        description: '86 planned service trip slots (43 UP / 43 DOWN)',
         primaryKey: 'trip_id',
         sourceLabel: dataset.scheduledTrips[0]?.source_label ?? 'synthetic'
       },
@@ -109,7 +109,7 @@ export async function getDataCentreData(): Promise<DataCentreResponse> {
         fileName: 'vehicles.csv',
         fileType: 'csv',
         recordCount: dataset.vehicles.length,
-        description: '13 synthetic demonstration vehicles (60 pax design capacity: 40 seated + 20 standing)',
+        description: '13 monitored fleet vehicles (60 pax design capacity: 40 seated + 20 standing)',
         primaryKey: 'bus_id',
         sourceLabel: dataset.vehicles[0]?.source_label ?? 'synthetic'
       },
@@ -134,9 +134,9 @@ export async function getDataCentreData(): Promise<DataCentreResponse> {
     return {
       success: true,
       data: {
-        datasetName: 'Silk Board ↔ Hebbal Corridor Operational Demonstration Dataset',
+        datasetName: 'Silk Board–Hebbal, Bengaluru Service Operations Dataset',
         datasetDate: '10 March 2025',
-        corridor: 'Silk Board ↔ Hebbal | Bengaluru (19.8 km, Outer Ring Road)',
+        corridor: 'Silk Board–Hebbal, Bengaluru (19.8 km, Outer Ring Road)',
         validationReport,
         files: fileSummaries,
         records: {

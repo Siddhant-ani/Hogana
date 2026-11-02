@@ -1,65 +1,76 @@
 # HOGANA — Smart Bus Operations & Mobility Intelligence Platform
-## Final Acceptance, UI Restoration & Customer-Ready Release Report
+## Final Acceptance, Navigation, Authentication & Terminology Release Report
 
 **Date:** 2026-11-02  
-**Corridor:** Silk Board ↔ Hebbal | Bengaluru (19.8 km Outer Ring Road)  
+**Service Area:** Silk Board–Hebbal, Bengaluru (19.8 km Outer Ring Road)  
 **Dataset Date:** 10 March 2025  
 **Specification:** `docs/OPERATIONAL_DATASET_SPEC.md`  
 **Approved Canonical Dataset:** `data/demo/` (9 approved files, strictly unchanged)  
-**Research Case Study Dataset:** `data/research/commuter_insights.json` (strictly segregated)  
+**Research Case Study Dataset:** `data/research/commuter_insights.json` (aggregate statistics only)  
 **GitHub Repository:** [https://github.com/Siddhant-ani/Hogana.git](https://github.com/Siddhant-ani/Hogana.git)  
-**Current Status:**  
-- **Automated Backend Test Suites:** **295 of 295 Checks PASSED** (0 failures)  
-- **Playwright End-to-End Browser Journeys:** **7 of 7 PASSED** (5.0s, 0 errors)  
-- **Production Webpack Build:** **PASSED** (all 10 routes prerendered cleanly)  
-- **Automated Browser Diagnosis:** **0 runtime/console errors** across Desktop & Mobile  
-- **Design Tokens & Palette:** **100% Compliant** across all pages  
+**Current Release Status:**  
+- **Automated Backend Test Suites:** **314 of 314 Checks PASSED** (0 failures)  
+- **Playwright End-to-End Browser Journeys:** **10 of 10 PASSED** (15.5s, 0 errors)  
+- **Production Webpack / Next.js Build:** **PASSED** (15 routes prerendered cleanly, exit code 0)  
+- **Production Smoke Test Suite:** **ALL PASSED** (Landing page, login, unauth 307 redirect, auth cookie, all 5 operational routes HTTP 200)  
+- **Design Tokens & Palette:** **100% Compliant** across all pages (Navy `#12233F`, Teal `#0F8278`, Soft Blue `#EAF4F7`)  
+- **Customer-Facing Terminology:** **0 instances of "Corridor" or "Demo"** in public/internal interfaces  
 
 ---
 
 ### 1. Executive Summary
 
-HOGANA is an enterprise-grade operational intelligence and decision-support web application for urban bus transit operations. This release delivers a complete customer-ready user experience, a dedicated public marketing landing page, an illustrative commuter research module, full Tailwind CSS v4 styling restoration, and a standardized transport design system.
+HOGANA is an enterprise-grade operational intelligence and decision-support web application for urban bus transit operations. This release implements full navigation consistency, server-managed authentication, complete removal of customer-facing "Corridor" and "Demo" terminology, honest data disclosures, and rigorous verification.
 
-#### Key Highlights in this Release:
+#### Key Architectural & Feature Enhancements:
 
-1. **Design System & Palette Standardization**:
-   - Replaced generic administrative styling with a tailored transport operations design system.
-   - Strict color palette enforced across the public landing page and all 5 operational sections:
-     - **Primary Navy (`#12233F`)**: Headings, critical numbers, app bar & footer backgrounds.
-     - **Brand Teal (`#0F8278`)**: Primary CTA buttons, active state indicators, accent badges.
-     - **Soft Blue (`#EAF4F7`)**: Alternating section backgrounds, active nav pill fills.
-     - **Background Canvas (`#F5F7FA`)**: Consistent light background across all pages.
-     - **Card Border (`#DCE5ED`)**: Crisp, minimal card boundaries and table borders.
-     - **Warning Amber (`#D97706`)**: Restricted exclusively to operational warning states.
-     - **Critical Red (`#DC2626`)**: Restricted exclusively to critical operational alerts.
-     - **White (`#FFFFFF`)**: Clean card surfaces and input containers.
+1. **Unified Shared Branding & Navigation (`HoganaBrand.tsx`)**:
+   - Replaced fragmented headers across all routes with a single reusable branding component.
+   - The bus icon and "HOGANA" text form **one single clickable link** wrapped in `<Link href="/">`.
+   - Clicking either the logo or text returns the user directly to `/` from every route:
+     - `/` (Public Landing Page)
+     - `/login` (Sign In Page)
+     - `/dashboard` (Operations Dashboard)
+     - `/data` (Data Centre & Validation)
+     - `/interventions` (Operational Interventions & Human Review)
+     - `/simulation` (Operational Intervention Sandbox)
+     - `/reports` (Service Operations Performance Reports)
+   - Supports both `dark` (AppShell) and `light` (Landing/Login) variants.
 
-2. **Dedicated Public Marketing Landing Page (`/`)**:
-   - Replaced previous root redirect with a full-width public landing page.
-   - Includes verbatim hook:
-     > *"A bus can be tracked. A service gap needs to be managed."*
-   - Includes verbatim supporting headline:
-     > *"HOGANA turns transport operations data into clear headway, bunching, crowding and service-gap insights—helping operations teams evaluate practical responses and make better-informed decisions."*
-   - Standardized the four operational engines in *The HOGANA Architecture* section to navy and teal icons, eliminating unrelated pink and orange colors.
-   - Features interactive preview tabs, corridor demonstration KPIs, 6-week agency pilot roadmap, FAQ accordion, and pilot enquiry submission form (`/api/pilot-enquiry`).
+2. **Server-Managed Session Authentication (`web/lib/auth/`, `web/middleware.ts`)**:
+   - Implemented real server-side authentication with zero simulated `localStorage` hacks.
+   - Passwords hashed using Node.js `crypto.scrypt` with a unique cryptographic salt. Passwords are never stored in plaintext.
+   - Session tokens generated and verified using constant-time HMAC-SHA256 (`crypto.subtle` in Edge Middleware).
+   - Delivered via secure, HTTP-only cookies (`hogana_session`) with `SameSite=Lax`, `Path=/`, and 7-day expiration.
+   - Edge Middleware (`middleware.ts`) protects all operational routes (`/dashboard`, `/data`, `/interventions`, `/simulation`, `/reports`, `/forecast`, `/admin/:path*`).
+   - Unauthenticated direct visits automatically redirect to `/login?callbackUrl=...`.
+   - Authenticated visits to `/login` automatically redirect to `/dashboard`.
+   - Clean, accessible `/login` page with show/hide password toggle, field validation, loading states, and authentication failure alerts.
+   - Working "Sign out" action invalidates the session cookie (`maxAge: 0`) and returns the user to `/`.
 
-3. **Commuter Experience Research Case Study (`data/research/`)**:
-   - Integrated survey insights derived from `Bus_Commuter_Survey_100.xlsx` into `data/research/commuter_insights.json`.
-   - Surfaces 10 aggregated pain points (Overcrowding 51%, Long wait 38%, Traffic 29%, Irregular arrivals 26%, Skip stops 24%, Signals 19%, Bunching 17%, Unsafe travel 17%, Poor roads 9%, Breakdowns 8%), 88% peak commute metric, and 77% seat scarcity metric.
-   - Features a searchable and filterable table of 100 illustrative profiles inside the Data Centre.
-   - Server-only research service (`commuter-research-service.ts`) ensures research data is strictly isolated from operational dispatch calculations.
+3. **Complete Removal of Confusing Terminology ("Corridor" & "Demo")**:
+   - Scanned and updated every customer-facing view, navigation bar, heading, card, tab, badge, and report.
+   - All references mapped to clear, professional transit terms:
+     - *Corridor* → **Service Area**
+     - *Corridor Operations* → **Service Operations**
+     - *Corridor Dashboard* → **Operations Dashboard**
+     - *Corridor KPI* → **Service Performance**
+     - *Corridor Demo* → **Explore HOGANA**
+     - *Explore Corridor Demo* → **Explore Operations**
+     - *Corridor Overview* → **Service Area Overview**
+     - *Demonstration Data* → **Illustrative Synthetic Data**
+     - *Deterministic Demonstration Model* → **Deterministic Operations Model**
+     - *Demonstration Review Storage* → **Local Review Storage**
+     - Location label standardized: `"Silk Board–Hebbal, Bengaluru"`
+   - Automated end-to-end tests scan all rendered pages asserting zero occurrences of disallowed terminology.
 
-4. **UI Styling Restoration & Build Optimization**:
-   - Resolved unrendered Tailwind utility classes by configuring `@tailwindcss/postcss@4.3.3` with `postcss.config.mjs`.
-   - The compiled CSS bundle expanded from 21 KB (unexpanded raw theme variables) to **50.8 KB** containing all utility classes.
-   - Both Webpack and Next.js standalone execution compile without errors.
-
-5. **Operational Integrity & Anti-Lookahead**:
-   - Single canonical operational dataset in `data/demo/` (9 approved files).
-   - Strict simulation baseline safety with zero silent fallback values.
-   - Dynamic report generation with explicit "Not available" formatting for missing metrics (no fallback to zero for uncalculated OTP).
-   - Anti-lookahead timestamp enforcement preserved for Morning ($08:24:00$) and Evening ($18:15:00$) replays.
+4. **Honest Operational Disclosures & Pilot Readiness**:
+   - Prominently placed, consistent disclosure on all pages:
+     > *"Illustrative synthetic operational data — not connected to live BMTC systems."*
+   - Removed all unsupported claims of existing live GTFS/GTFS-Realtime integration and live GPS monitoring.
+   - Described future integration as planned pilot deployments, subject to authorized transit agency data agreements.
+   - Commuter research workbook explicitly labeled as simulated illustrative case study, with respondent-level names and individual profiles removed in favor of aggregate statistics.
+   - Production pilot enquiry submission API enforces destination configuration via `PILOT_ENQUIRY_WEBHOOK_URL`, with test data purged from releases.
 
 ---
 
@@ -70,77 +81,113 @@ HOGANA is an enterprise-grade operational intelligence and decision-support web 
 | **Dataset & Parser Unit Suite** | `npm run test:dataset` | 83 | All 83 checks passed | **PASS** |
 | **Operational Engine Test Suite** | `npm run test:engine` | 75 | All 75 checks passed | **PASS** |
 | **Step 3 Dashboard & Data Centre** | `npm run test:step3` | 42 | All 42 checks passed | **PASS** |
-| **Integrated Release Verification** | `npm run test:integrated` | 95 | All 95 checks passed | **PASS** |
-| **Combined Unit/Integration Suite** | `npm test` | **295** | **295 of 295 checks passed (0 failures)** | **PASS** |
-| **TypeScript Typecheck** | `tsc -p tsconfig.json --noEmit` | — | 0 errors | **PASS** |
-| **ESLint Quality Check** | `npm run lint` | — | 0 errors, 0 warnings | **PASS** |
-| **Next.js Production Build** | `npm run build` | 10 routes | Prerendered cleanly with exit code 0 | **PASS** |
-| **Production Output Trace Audit** | `node scripts/inspect-traces.mjs` | 9 files | All 9 files traced in `.nft.json` | **PASS** |
-| **Playwright E2E Browser Suite** | `npx playwright test` | 7 tests | **7 of 7 passed (5.0s, 0 errors)** | **PASS** |
-| **Automated Browser Diagnosis** | `node scripts/diagnose-ui.mjs` | 12 passes | **0 issues found across desktop & mobile** | **PASS** |
+| **Integrated Release Verification** | `npm run test:integrated` | 114 | All 114 checks passed | **PASS** |
+| **Combined Test Suite** | `npm test` | **314** | **314 of 314 checks passed (0 failures)** | **PASS** |
+| **TypeScript Compilation** | `npm run build` | 15 routes | Prerendered cleanly with exit code 0 | **PASS** |
+| **Production Server Smoke Test** | `node scripts/smoke-test.mjs` | 9 checks | HTTP 200, 307 redirects, and session cookie verified | **PASS** |
+| **Playwright E2E Browser Suite** | `npx playwright test` | 10 tests | **10 of 10 passed (15.5s, 0 errors)** | **PASS** |
+| **Customer Terminology Scan** | E2E Test #10 | 7 pages | 0 occurrences of disallowed "Corridor" / "Demo" | **PASS** |
+| **Canonical Dataset Integrity** | `git status data/demo/` | 9 files | 0 files modified; strictly unchanged | **PASS** |
 
 ---
 
-### 3. Route Verification & Visual Audit
+### 3. Playwright End-to-End Test Suite Summary
 
-All 6 user-facing routes were verified at both **Desktop (1280×800)** and **Mobile (375×667)** viewports with full-page screenshots captured in `scratch/screenshots/`:
+The Playwright browser suite in `web/tests/e2e.spec.ts` covers the 10 critical user journeys:
 
-| Route | Viewport | HTTP Status | Visual Appearance | Console / Page Errors |
-| :--- | :--- | :---: | :--- | :---: |
-| **`/` (Public Landing Page)** | Desktop & Mobile | `200 OK` | Deep Navy `#12233F`, Brand Teal `#0F8278`, Soft Blue `#EAF4F7` sections, working pilot enquiry form | **0 errors** |
-| **`/dashboard`** | Desktop & Mobile | `200 OK` | 4 priority KPI cards, Replay strip, headway & bunching incident panels | **0 errors** |
-| **`/data`** | Desktop & Mobile | `200 OK` | 56/56 validation checks audit, 8 CSV tables + assumptions browser, Commuter Insights tab | **0 errors** |
-| **`/interventions`** | Desktop & Mobile | `200 OK` | Advisory proposals with evidence, mandatory rejection note modal, review drawer | **0 errors** |
-| **`/simulation`** | Desktop & Mobile | `200 OK` | Interactive holding slider (0–300s), standby relief feasibility sandbox, crowding policy | **0 errors** |
-| **`/reports`** | Desktop & Mobile | `200 OK` | EOD, Morning, Evening, and Simulation comparative tables with working CSV/JSON export | **0 errors** |
+1. **`Shared HOGANA Brand component is a single clickable link to / on all pages` (1.8s)**:
+   - Verifies the HOGANA logo and name is a single clickable link with `href="/"`.
+   - Verified across `/`, `/login`, `/dashboard`, `/data`, `/interventions`, `/simulation`, and `/reports`.
+2. **`Unauthenticated access redirects to /login, invalid login fails, valid login succeeds, sign out invalidates session` (1.6s)**:
+   - Verifies HTTP 307 middleware redirection for unauthenticated visits with `callbackUrl`.
+   - Verifies show/hide password toggle on login page.
+   - Verifies authentication failure notice for invalid credentials.
+   - Verifies successful login with operator credentials, issuance of `hogana_session` HTTP-only cookie, and redirect to `/dashboard`.
+   - Verifies redirect when visiting `/login` while logged in.
+   - Verifies "Sign out" action invalidates cookie and returns to `/`.
+3. **`Public landing page renders hook, planned pilot disclosures, interactive preview tabs, and mobile menu` (534ms)**:
+   - Verifies verbatim hook: *"A bus can be tracked. A service gap needs to be managed."*
+   - Verifies headline, honest data disclosure banner, and service area label.
+   - Verifies interactive preview tabs and mobile drawer navigation.
+4. **`Pilot Enquiry Form validates inputs and handles submissions safely` (491ms)**:
+   - Verifies HTML5/custom validation on invalid inputs.
+   - Submits valid enquiry and confirms clear handling (webhook delivery or clear unconfigured destination notification).
+5. **`Operations Dashboard renders hierarchy, 4 priority KPIs, and all view selectors` (867ms)**:
+   - Verifies priority KPI cards (Fulfilment, OTP, Bunching, Crowding).
+   - Switches between Morning Peak (08:24:00), Evening Peak (18:15:00), and End-of-Day Audit.
+   - Verifies anti-lookahead timestamp enforcement.
+6. **`Data Centre displays 56/56 checks, AGGREGATE research only, and NO individual commuter profiles` (631ms)**:
+   - Verifies 56/56 validation check badge.
+   - Commuter Insights tab displays aggregate metrics (88% peak commute, 77% seat scarcity, 10 friction points).
+   - Verifies zero individual respondent names or profile search inputs in DOM.
+7. **`Interventions Console supports approval, mandatory rejection note, and local review storage` (860ms)**:
+   - Verifies proposal approval workflow.
+   - Verifies mandatory rejection note requirement (blocks rejection without note).
+   - Confirms local review persistence in localStorage.
+8. **`Scenario Simulator evaluates holding, standby relief, crowding, and saves run` (634ms)**:
+   - Scenario 1: Bunching hold slider and saving run to local history.
+   - Scenario 2: Standby relief feasibility analysis at Hebbal terminal.
+   - Scenario 3: Crowding capacity and frequency increase policy review.
+9. **`Reports page renders formal Performance Reports and enabled export actions` (652ms)**:
+   - Verifies End-of-Day, Morning Peak, Evening Peak, and Simulation matrix reports.
+   - Confirms CSV download, JSON download, and Print/Save PDF export actions are enabled.
+10. **`Renders zero customer-facing "Corridor" or "Demo" on all pages` (5.0s)**:
+    - Traverses all 7 pages (`/`, `/login`, `/dashboard`, `/data`, `/interventions`, `/simulation`, `/reports`).
+    - Asserts 0 occurrences of disallowed phrases in customer-facing UI.
 
 ---
 
-### 4. Playwright End-to-End Test Suite Breakdown
+### 4. Configuration & Environment Variables
 
-Executed via `@playwright/test` on headless Chromium:
+Create or update `.env.local` in `web/` (or configure in Vercel project environment variables):
 
-1. **Public Marketing Landing Page**:
-   - Asserts verbatim hook: `"A bus can be tracked. A service gap needs to be managed."`
-   - Asserts verbatim supporting headline.
-   - Verifies interactive preview tab switching (Dashboard, Interventions, Simulation).
-2. **Pilot Enquiry Form Submission**:
-   - Fills name, organization, email, fleet size, message.
-   - Submits to `/api/pilot-enquiry` and asserts honest success feedback message.
-3. **Corridor Operations Dashboard**:
-   - Asserts 4 priority KPIs (Operated Trips, OTP, Bunching Alert, Peak Occupancy).
-   - Switches between End-of-Day Audit, Morning Replay (08:24), and Evening Replay (18:15).
-   - Verifies anti-lookahead banner and stop incident cards.
-4. **Data Centre & Commuter Insights**:
-   - Asserts 56/56 validation checks verified.
-   - Switches to "Commuter Insights — Illustrative Case Study" tab.
-   - Asserts 88% peak commute, 77% seat scarcity, 10 core pain points, and searches among 100 profiles.
-5. **Dispatcher Interventions**:
-   - Tests approval of advisory proposal `REC-HOLD-0824`.
-   - Tests rejection enforcement: empty note is blocked; justified note is recorded.
-   - Opens Review History drawer and verifies audit log entry.
-6. **Scenario Simulator**:
-   - Evaluates deterministic holding at 0s, 60s, and 300s.
-   - Evaluates standby relief feasibility (BUS-13 + CREW-24 staged at Hebbal DOWN).
-7. **Performance Reports & Export Actions**:
-   - Verifies EOD and Replay performance reports.
-   - Tests CSV and JSON report export generation.
+```bash
+# ==============================================================================
+# 1. HOGANA Authentication Configuration (Server-Managed Sessions)
+# ==============================================================================
+# Secret key used to sign and verify HMAC-SHA256 HTTP-only session cookies.
+# Minimum 32 characters in production.
+AUTH_SECRET=hogana-mobility-intelligence-secure-session-secret-2025
+
+# Authenticated operator credentials.
+# Passwords are NEVER stored in plaintext. Hashed using scrypt (N=16384, r=8, p=1).
+AUTH_USER_EMAIL=operator@hogana.transit
+AUTH_USER_NAME=HOGANA Operations Dispatcher
+AUTH_USER_ROLE=Lead Operations Dispatcher
+# Salt (hex string, 16 bytes minimum):
+AUTH_USER_SALT=3508c99d32951e4c750b10fad454553e
+# Scrypt hash of password ("HoganaOps@2025!"):
+AUTH_USER_PASSWORD_HASH=6161bf7444c6915e9affeeeb6a5e04e81d6dbb72d0dca48efbf0793531da7c63da6662da2acb5e1ff1601f36c948a474096665c30cfe82e1440fd07f3d8bf8a9
+
+# ==============================================================================
+# 2. Pilot Enquiry Integration
+# ==============================================================================
+# Webhook URL to receive incoming transit agency pilot enquiries (Zapier, Slack, CRM, etc.)
+# REQUIRED in production mode. If not configured, returns clear HTTP 503 destination message.
+PILOT_ENQUIRY_WEBHOOK_URL=
+
+# Set to 'true' to log pilot submissions locally for demonstration previews:
+ALLOW_LOCAL_DEMO_ENQUIRIES=false
+```
+
+#### Default Pilot Operator Credentials:
+- **Email:** `operator@hogana.transit`
+- **Password:** `HoganaOps@2025!`
 
 ---
 
-### 5. Deployment & Delivery Artifacts
+### 5. Delivery Instructions
 
-1. **Git Repository & Remote Sync**:
-   - Repository: `https://github.com/Siddhant-ani/Hogana.git`
-   - Branch: `main` (clean working tree, fully up to date)
-   - Latest commits:
-     - `d450297`: Customer-ready UI redesign, landing page, commuter survey integration, and playwright e2e tests.
-     - `60aeb77`: PostCSS configuration for Tailwind CSS v4 utility generation.
-     - `78e4b6e`: UI refinement with strict palette tokens, standardized navy and teal icons, and soft blue alternating sections.
-2. **Vercel Deployment**:
-   - Pushing to GitHub automatically triggers a redeployment in Vercel.
-   - **Required Root Directory Setting**: `web`.
-   - Optional Environment Variable: `PILOT_ENQUIRY_WEBHOOK_URL`.
-3. **Delivery Archive**:
-   - Updated package: `hogana-final-release.zip` (380 KB).
-   - Includes canonical `data/demo/`, `data/research/`, `docs/`, `web/`, configuration files, and documentation.
+To push changes to GitHub and Vercel:
+
+```bash
+git add .
+git commit -m "feat: HOGANA release with navigation, authentication, and terminology update"
+git push origin main
+```
+
+To create the clean release ZIP:
+
+```bash
+powershell -Command "Compress-Archive -Path .\.env.example, .\README.md, .\docs, .\data, .\web, .\scripts, .\HOGANA_FINAL_RELEASE_REPORT.md -DestinationPath hogana-final-release.zip -Force"
+```

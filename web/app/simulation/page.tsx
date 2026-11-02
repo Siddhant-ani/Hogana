@@ -4,7 +4,7 @@ import SimulationClient from "./SimulationClient";
 
 export const metadata = {
   title: "Simulation — HOGANA Smart Bus Operations",
-  description: "Deterministic operational intervention sandbox and scenario impact analysis for Silk Board ↔ Hebbal corridor."
+  description: "Deterministic operational intervention sandbox and scenario impact analysis for Silk Board–Hebbal, Bengaluru service area."
 };
 
 export default async function SimulationPage() {

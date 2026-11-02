@@ -99,8 +99,8 @@ export async function getReportsData(): Promise<ReportsResponse> {
     const morning = morningRes.data.currentView;
     const evening = eveningRes.data.currentView;
 
-    const disclaimer = 'Synthetic demonstration report — not an official BMTC operational report.';
-    const corridor = 'Silk Board ↔ Hebbal | Bengaluru (19.8 km Outer Ring Road)';
+    const disclaimer = 'Illustrative synthetic operational data — not connected to live BMTC systems.';
+    const corridor = 'Silk Board–Hebbal, Bengaluru (19.8 km Outer Ring Road)';
     const evalDate = '10 March 2025';
 
     // 1. END-OF-DAY REPORT
@@ -115,7 +115,7 @@ export async function getReportsData(): Promise<ReportsResponse> {
       { metric: 'Fulfilled Operated Trips', value: `${eod.kpis.operatedTrips} (${eod.kpis.fulfillmentRatePct}%)`, benchmark: '≥ 90.0% target', status: eod.kpis.fulfillmentRatePct >= 90 ? 'optimal' : 'warning' },
       { metric: 'Cancelled Trips', value: `${eod.kpis.cancelledTrips} (${eod.kpis.cancellationRatePct}%)`, benchmark: '< 2.0% threshold', status: eod.kpis.cancelledTrips === 0 ? 'optimal' : 'warning' },
       { metric: 'Resource Shortfall Trips', value: `${eod.kpis.resourceShortfallTrips} (${eod.kpis.resourceShortfallRatePct}%)`, benchmark: '0 shortfall slots', status: 'alert' },
-      { metric: 'Corridor On-Time Performance (±120s)', value: otpDisplay, benchmark: '924 evaluated stop events', status: otpStatus },
+      { metric: 'Service On-Time Performance (±120s)', value: otpDisplay, benchmark: '924 evaluated stop events', status: otpStatus },
       { metric: 'Peak Passenger Occupancy', value: `${eod.crowdingSummary.peakOccupancyPct}% (${eod.crowdingSummary.peakOnboardPassengers} pax)`, benchmark: '60 design capacity (40 seated + 20 standing)', status: 'warning' }
     ];
 
@@ -130,16 +130,16 @@ export async function getReportsData(): Promise<ReportsResponse> {
     const eodReport: OperationalReport = {
       reportId: 'REP-EOD-20250310',
       reportType: 'eod',
-      title: 'End-of-Day Corridor Operations Audit Report',
+      title: 'End-of-Day Service Operations Audit Report',
       corridor,
       evaluationDate: evalDate,
       evaluationTimestamp: '2025-03-10T22:00:00',
       disclaimer,
-      executiveSummary: 'Full-day historical performance audit across 86 scheduled slots on the Silk Board ↔ Hebbal corridor. 77 trips were operated (89.53% fulfillment), with 2 cancellations (T-UP-008 breakdown, T-DN-033 sickness) and 7 planned timetable slots unserviced due to vehicle/driver resource shortfall.',
+      executiveSummary: 'Full-day historical performance audit across 86 scheduled slots on the Silk Board–Hebbal, Bengaluru service area. 77 trips were operated (89.53% fulfillment), with 2 cancellations (T-UP-008 breakdown, T-DN-033 sickness) and 7 planned timetable slots unserviced due to vehicle/driver resource shortfall.',
       kpis: eodKpis,
       sections: [
         {
-          heading: 'Corridor Timetable Fulfillment & Non-Operated Slots Reconciliation',
+          heading: 'Service Timetable Fulfillment & Non-Operated Slots Reconciliation',
           description: 'Reconciliation of scheduled timetable slots, operated runs, cancellations, and resource shortfalls.',
           rows: eodTripRows
         },
@@ -157,9 +157,9 @@ export async function getReportsData(): Promise<ReportsResponse> {
         },
         {
           heading: 'Fleet Availability & Depot Reconciliation',
-          description: 'End-of-day fleet assignment and maintenance logs across 13 demonstration buses.',
+          description: 'End-of-day fleet assignment and maintenance logs across 13 monitored buses.',
           rows: [
-            { Category: 'Active Revenue Fleet', Count: eod.fleetSummary.activeCount, Notes: 'Operated scheduled corridor trips' },
+            { Category: 'Active Revenue Fleet', Count: eod.fleetSummary.activeCount, Notes: 'Operated scheduled service trips' },
             { Category: 'Standby Fleet', Count: eod.fleetSummary.standbyCount, Notes: 'BUS-12 staged @ Silk Board, BUS-13 staged @ Hebbal' },
             { Category: 'Maintenance Fleet', Count: eod.fleetSummary.maintenanceCount, Notes: 'BUS-05 @ Hebbal, BUS-08 @ Silk Board (Reason not recorded)' }
           ]
@@ -171,7 +171,7 @@ export async function getReportsData(): Promise<ReportsResponse> {
     // 2. MORNING REPLAY REPORT
     const morningKpis: ReportKpiRow[] = [
       { metric: 'As-Of Evaluation Timestamp', value: '2025-03-10T08:24:00', benchmark: 'Morning Peak Window', status: 'neutral' },
-      { metric: 'Active Trips in Progress', value: `${morning.kpis.replayStatus?.inProgressCount ?? 0} trips`, benchmark: 'Corridor revenue trips underway', status: 'optimal' },
+      { metric: 'Active Trips in Progress', value: `${morning.kpis.replayStatus?.inProgressCount ?? 0} trips`, benchmark: 'Service revenue trips underway', status: 'optimal' },
       { metric: 'Fulfilled Completed Trips', value: `${morning.kpis.operatedTrips} trips`, benchmark: 'Strictly completed runs', status: 'neutral' },
       { metric: 'Detected Bus Bunching', value: '75s separation', benchmark: '< 120s threshold at Marathahalli UP', status: 'alert' },
       { metric: 'Advisory Holding Action', value: '300s hold recommended', benchmark: 'BUS-07 held at control point', status: 'warning' },
@@ -210,8 +210,8 @@ export async function getReportsData(): Promise<ReportsResponse> {
           rows: [
             {
               Action: 'Hold Trailing Bus',
-              TargetBus: morning.bunchingSummary.holdingRecommendation.trailingBusId ?? 'BUS-07',
-              Location: morning.bunchingSummary.holdingRecommendation.controlStopName ?? 'Marathahalli UP',
+              TargetBus: morning.bunchingSummary.holdingRecommendation.trailingBusId ?? 'Not available',
+              Location: morning.bunchingSummary.holdingRecommendation.controlStopName ?? 'Not available',
               FeasibleHold: `${morning.bunchingSummary.holdingRecommendation.feasibleHoldSeconds}s`,
               ProjectedSeparation: `${morning.bunchingSummary.holdingRecommendation.projectedSeparationSeconds}s`,
               CorrectionType: morning.bunchingSummary.holdingRecommendation.isPartialCorrection ? 'Partial Correction' : 'Full Restoration'
@@ -225,19 +225,23 @@ export async function getReportsData(): Promise<ReportsResponse> {
     // 3. EVENING REPLAY REPORT
     const eveningKpis: ReportKpiRow[] = [
       { metric: 'As-Of Evaluation Timestamp', value: '2025-03-10T18:15:00', benchmark: 'Evening Peak Window', status: 'neutral' },
-      { metric: 'Active Trips in Progress', value: `${evening.kpis.replayStatus?.inProgressCount ?? 0} trips`, benchmark: 'Corridor revenue trips underway', status: 'optimal' },
+      { metric: 'Active Trips in Progress', value: `${evening.kpis.replayStatus?.inProgressCount ?? 0} trips`, benchmark: 'Service revenue trips underway', status: 'optimal' },
       { metric: 'Cancelled Trip Recorded', value: 'T-DN-033', benchmark: 'Logged 17:10:00 (Driver Sickness)', status: 'alert' },
       { metric: 'Terminal Departure Gap', value: '1,440s (24 min)', benchmark: '> 1,080s threshold at Hebbal DOWN', status: 'alert' },
       { metric: 'Standby Relief Feasibility', value: 'Feasible (BUS-13 + CREW-24)', benchmark: 'Staged @ Hebbal / Shift 2 on duty', status: 'optimal' }
     ];
 
+    const eveningReliefBus = evening.serviceGapsSummary.reliefRecommendation.standbyBusId ?? 'Not available';
+    const eveningReliefDriver = evening.serviceGapsSummary.reliefRecommendation.standbyDriverId ?? 'Not available';
+    const eveningCancelledTrip = simBaselineRes.data?.relief.cancelledTripId ?? 'T-DN-033';
+
     const eveningGapRows: ReportTableRow[] = evening.serviceGapsSummary.detectedGaps.map((g) => ({
       Terminal: g.stopName,
       Direction: g.direction,
-      CancelledTrip: 'T-DN-033',
-      LeadingTrip: g.leadingTripId ?? 'T-DN-032',
-      TrailingTrip: g.trailingTripId ?? 'T-DN-034',
-      MeasuredGap: `${g.measuredSeconds}s (24 min)`,
+      CancelledTrip: eveningCancelledTrip,
+      LeadingTrip: g.leadingTripId ?? 'Not available',
+      TrailingTrip: g.trailingTripId ?? 'Not available',
+      MeasuredGap: `${g.measuredSeconds}s (${Math.round(g.measuredSeconds / 60)} min)`,
       Threshold: `> ${g.thresholdSeconds}s`,
       GapType: g.gapType
     }));
@@ -250,7 +254,7 @@ export async function getReportsData(): Promise<ReportsResponse> {
       evaluationDate: evalDate,
       evaluationTimestamp: '2025-03-10T18:15:00',
       disclaimer,
-      executiveSummary: 'As-of operational status during evening peak at 18:15:00. Highlights a 1,440s terminal departure gap at Hebbal DOWN caused by cancelled trip T-DN-033, and confirms feasibility of deploying standby bus BUS-13 with on-shift driver CREW-24.',
+      executiveSummary: `As-of operational status during evening peak at 18:15:00. Highlights a 1,440s terminal departure gap at Hebbal DOWN caused by cancelled trip ${eveningCancelledTrip}, and confirms feasibility of deploying standby bus ${eveningReliefBus} with on-shift driver ${eveningReliefDriver}.`,
       kpis: eveningKpis,
       sections: [
         {
@@ -264,13 +268,13 @@ export async function getReportsData(): Promise<ReportsResponse> {
           rows: [
             {
               Resource: 'Standby Bus',
-              Identifier: evening.serviceGapsSummary.reliefRecommendation.standbyBusId ?? 'BUS-13',
+              Identifier: eveningReliefBus,
               Location: 'Hebbal DOWN Terminal',
               Status: 'Staged and Ready'
             },
             {
               Resource: 'Standby Driver',
-              Identifier: evening.serviceGapsSummary.reliefRecommendation.standbyDriverId ?? 'CREW-24',
+              Identifier: eveningReliefDriver,
               Location: 'Hebbal Terminal',
               Status: 'Shift 2 [14:00, 22:00) — On Duty'
             }
@@ -334,7 +338,7 @@ export async function getReportsData(): Promise<ReportsResponse> {
       evaluationDate: evalDate,
       evaluationTimestamp: '2025-03-10T22:00:00',
       disclaimer,
-      executiveSummary: 'Deterministic simulation comparison evaluating the operational impact of proposed holding, relief deployment, and crowding policy rules on approved corridor demonstration baselines.',
+      executiveSummary: 'Deterministic simulation comparison evaluating the operational impact of proposed holding, relief deployment, and crowding policy rules on validated service operations baselines.',
       kpis: [
         { metric: 'Holding Simulation Scope', value: `0s to ${simBaseline.holding.maxHoldingAllowanceSeconds}s range`, benchmark: `Max ${simBaseline.holding.maxHoldingAllowanceSeconds}s delay allowance`, status: 'optimal' },
         { metric: 'Morning Bunching Projected', value: `${simHolding.projectedSeparationSeconds}s separation`, benchmark: `Cleared > ${simHolding.bunchingThresholdSeconds}s bunching`, status: simHolding.bunchingCleared ? 'optimal' : 'warning' },

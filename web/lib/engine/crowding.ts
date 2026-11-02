@@ -267,7 +267,7 @@ export function evaluateFrequencyIncreaseRecommendation(
       routeId,
       direction,
       consecutiveSeverelyOvercrowdedStops: [],
-      recommendationText: 'Incomplete load records — cannot confirm sustained corridor overcrowding.',
+      recommendationText: 'Incomplete load records — cannot confirm sustained service overcrowding.',
       reason: `No passenger load records found for trip ${tripId}`
     };
   }
@@ -288,7 +288,7 @@ export function evaluateFrequencyIncreaseRecommendation(
       routeId,
       direction,
       consecutiveSeverelyOvercrowdedStops: [],
-      recommendationText: 'Incomplete load records — cannot confirm sustained corridor overcrowding.',
+      recommendationText: 'Incomplete load records — cannot confirm sustained service overcrowding.',
       reason: 'No valid load observations recorded on or before evaluation time'
     };
   }
@@ -367,7 +367,7 @@ export function evaluateFrequencyIncreaseRecommendation(
       routeId,
       direction,
       consecutiveSeverelyOvercrowdedStops: consecutiveStops,
-      recommendationText: 'Incomplete load records — cannot confirm sustained corridor overcrowding.',
+      recommendationText: 'Incomplete load records — cannot confirm sustained service overcrowding.',
       reason: 'Missing intermediate stop sequence or unavailable passenger load data'
     };
   }

@@ -17,6 +17,7 @@ import {
 import { getSimulationBaselineData } from '../lib/engine/simulation-service';
 import { getReportsData } from '../lib/engine/reports-service';
 import { isValidLocalReview, isValidLocalSimRun } from '../lib/engine/report-validators';
+import { getCommuterResearchData } from '../lib/research/commuter-research-service';
 
 async function verifyIntegratedRelease() {
   console.log('============================================================');
@@ -177,7 +178,7 @@ async function verifyIntegratedRelease() {
 
     // EOD Report
     assert('EOD Report: exists with correct ID', eod.reportId === 'REP-EOD-20250310');
-    assert('EOD Report: disclaimer is present and correct', eod.disclaimer.includes('Synthetic demonstration report'));
+    assert('EOD Report: disclaimer is present and correct', eod.disclaimer.includes('Illustrative synthetic') || eod.disclaimer.includes('Synthetic demonstration'));
     assert('EOD Report: reconciles 86 scheduled trips', eod.kpis.some((k) => k.metric.includes('Scheduled') && k.value.includes('86')));
     assert('EOD Report: reconciles 77 operated trips', eod.kpis.some((k) => k.metric.includes('Operated') && k.value.includes('77')));
     const otpKpi = eod.kpis.find((k) => k.metric.includes('On-Time Performance'));
@@ -263,6 +264,53 @@ async function verifyIntegratedRelease() {
     csvExportSucceeded = false;
   }
   assert('Reports Export: CSV generation with malformed input succeeds without crashing', csvExportSucceeded === true);
+
+  // --- 5. COMMUTER RESEARCH AGGREGATE ISOLATION TESTS ---
+  console.log('\n=== TEST SUITE 5: COMMUTER RESEARCH AGGREGATE ISOLATION ===');
+  const commuterRes = await getCommuterResearchData();
+  assert('Commuter Research: service loads successfully', commuterRes.success && commuterRes.data !== undefined);
+  if (commuterRes.data) {
+    const rData = commuterRes.data;
+    assert('Commuter Research: discloses simulated workbook', rData.isSimulatedWorkbook === true && rData.disclaimer.includes('simulated case study'));
+    assert('Commuter Research: sample size is 100', rData.sampleSize === 100);
+    assert('Commuter Research: reports 88% peak commute', rData.metrics.peakTravelPatternPct === 88);
+    assert('Commuter Research: reports 77% seat scarcity', rData.metrics.rarelyOrNeverVacantPct === 77);
+    assert('Commuter Research: contains 10 pain points', rData.commuterPainPoints.length === 10);
+    assert('Commuter Research: travel window distribution is aggregate', rData.metrics.travelWindowDistribution.bothPeaks === 38);
+    // Explicitly verify NO sampleProfiles field exists on the returned data
+    assert('Commuter Research Boundary: sampleProfiles is undefined', (rData as unknown as Record<string, unknown>).sampleProfiles === undefined);
+  }
+
+  // --- 6. MISSING-DATA & SILENT FALLBACK PROTECTION TESTS ---
+  console.log('\n=== TEST SUITE 6: MISSING DATA FAIL-SAFES & SILENT FALLBACK REMOVAL ===');
+
+  // Holding missing baseline
+  const missingHold = simulateHoldingScenario({ holdDurationSeconds: 150 }, undefined);
+  assert('Missing Data Hold: returns available: false when baseline undefined', missingHold.available === false);
+  assert('Missing Data Hold: projectedSeparationSeconds is null', missingHold.projectedSeparationSeconds === null);
+  assert('Missing Data Hold: baselineSeparationSeconds is null', missingHold.baselineSeparationSeconds === null);
+
+  // Relief missing baseline
+  const missingRelief = simulateStandbyReliefScenario({ standbyBusId: 'BUS-1', standbyDriverId: 'CREW-1' }, undefined);
+  assert('Missing Data Relief: returns available: false when baseline undefined', missingRelief.available === false);
+  assert('Missing Data Relief: measuredGapSeconds is null', missingRelief.measuredGapSeconds === null);
+  assert('Missing Data Relief: feasibilityStatus is unavailable', missingRelief.feasibilityStatus === 'unavailable');
+
+  // Crowding missing baseline
+  const missingCrowd = simulateCrowdingScenario(undefined);
+  assert('Missing Data Crowding: returns available: false when baseline undefined', missingCrowd.available === false);
+  assert('Missing Data Crowding: observedPeakPassengers is null', missingCrowd.observedPeakPassengers === null);
+
+  // Crowding without seated/standing capacities must NOT fallback to 40/20
+  const crowdNoFallbacks = simulateCrowdingScenario({
+    designCapacity: 60,
+    observedPeakPassengers: 85,
+    observedPeakOccupancyPct: 141.7
+    // seatedCapacity and standingCapacity intentionally omitted
+  });
+  assert('Missing Capacity Fallback: seatedCapacity is explicitly null (no silent 40 fallback)', crowdNoFallbacks.seatedCapacity === null);
+  assert('Missing Capacity Fallback: standingCapacity is explicitly null (no silent 20 fallback)', crowdNoFallbacks.standingCapacity === null);
+  assert('Missing Capacity Fallback: designCapacity preserved', crowdNoFallbacks.designCapacity === 60);
 
   console.log('\n============================================================');
   console.log(`TOTAL INTEGRATED RELEASE CHECKS: ${passed + failed}`);

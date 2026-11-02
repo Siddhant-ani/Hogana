@@ -152,7 +152,7 @@ export default function SimulationClient({ initialData }: SimulationClientProps)
     setHistory(updated);
     const saved = saveStoredSimRuns(updated);
     if (saved) {
-      showNotification("Holding simulation saved to demonstration history.", "success");
+      showNotification("Holding simulation saved to local history.", "success");
     } else {
       showNotification("Warning: Storage unavailable; run saved in memory only.", "warning");
     }
@@ -170,7 +170,7 @@ export default function SimulationClient({ initialData }: SimulationClientProps)
     setHistory(updated);
     const saved = saveStoredSimRuns(updated);
     if (saved) {
-      showNotification("Relief simulation saved to demonstration history.", "success");
+      showNotification("Relief simulation saved to local history.", "success");
     } else {
       showNotification("Warning: Storage unavailable; run saved in memory only.", "warning");
     }
@@ -212,7 +212,7 @@ export default function SimulationClient({ initialData }: SimulationClientProps)
       <PageHeader
         badge="Scenario Simulator"
         badgeTone="teal"
-        corridor="Silk Board ↔ Hebbal (19.8 km)"
+        serviceArea="Silk Board–Hebbal, Bengaluru (19.8 km)"
         title="Operational Intervention Sandbox &amp; Impact Analysis"
         description="Simulate operational adjustments across approved morning bunching, evening service gap, and passenger crowding scenarios. This deterministic model evaluates exact constraints without altering approved source dataset records."
         actions={
@@ -232,8 +232,8 @@ export default function SimulationClient({ initialData }: SimulationClientProps)
       {/* Deterministic Disclaimer Banner */}
       <AlertPanel
         severity="info"
-        title="Deterministic Demonstration Model"
-        description="Calculations evaluate approved mathematical constraints from demo_assumptions.json. This is not a black-box predictive AI system or live passenger forecast."
+        title="Deterministic Operations Model"
+        description="Calculations evaluate approved mathematical constraints from assumptions.json. This is not a black-box predictive AI system or live passenger forecast."
       />
 
       {/* Navigation Tabs */}
@@ -556,7 +556,7 @@ export default function SimulationClient({ initialData }: SimulationClientProps)
 
               {/* Mandatory Realistic Disclaimer */}
               <div className="pt-2 border-t border-slate-200 text-slate-600 text-[11px] leading-relaxed italic">
-                <strong>Demonstration Boundary Disclosure:</strong> {reliefResult.limitations}
+                <strong>Operational Boundary Disclosure:</strong> {reliefResult.limitations}
               </div>
             </div>
           </div>
@@ -570,10 +570,10 @@ export default function SimulationClient({ initialData }: SimulationClientProps)
             <div className="pb-4 border-b border-slate-100 mb-5">
               <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
                 <Users className="h-5 w-5 text-teal-600" />
-                Scenario 3: Corridor Passenger Crowding &amp; Frequency Eligibility
+                Scenario 3: Passenger Crowding &amp; Frequency Eligibility
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Evaluates passenger load observations from <code>passenger_loads.csv</code> against corridor capacity thresholds.
+                Evaluates passenger load observations from <code>passenger_loads.csv</code> against service capacity thresholds.
               </p>
             </div>
 
@@ -599,7 +599,7 @@ export default function SimulationClient({ initialData }: SimulationClientProps)
                   60 Passengers
                 </span>
                 <span className="text-amber-800 text-[11px]">
-                  {crowdingResult.overcrowdedVisits} corridor stop visits (60–89 pax)
+                  {crowdingResult.overcrowdedVisits} stop visits (60–89 pax)
                 </span>
               </div>
 
@@ -611,7 +611,7 @@ export default function SimulationClient({ initialData }: SimulationClientProps)
                   90 Passengers
                 </span>
                 <span className="text-rose-800 text-[11px]">
-                  {crowdingResult.severelyOvercrowdedVisits} corridor stop visits (≥ 90 pax)
+                  {crowdingResult.severelyOvercrowdedVisits} stop visits (≥ 90 pax)
                 </span>
               </div>
             </div>
@@ -764,7 +764,7 @@ export default function SimulationClient({ initialData }: SimulationClientProps)
 
             <div className="flex items-center justify-between mb-4">
               <p className="text-xs text-slate-500">
-                Runs recorded in browser local demonstration storage (<code>localStorage</code>).
+                Runs recorded in browser local storage (<code>localStorage</code>).
               </p>
               {history.length > 0 && (
                 <button

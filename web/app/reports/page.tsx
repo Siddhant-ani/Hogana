@@ -4,7 +4,7 @@ import ReportsClient from "./ReportsClient";
 
 export const metadata = {
   title: "Reports — HOGANA Smart Bus Operations",
-  description: "Operational performance audit reports, CSV/JSON exports, and printable summaries for Silk Board ↔ Hebbal corridor."
+  description: "Operational performance audit reports, CSV/JSON exports, and printable summaries for Silk Board–Hebbal, Bengaluru service area."
 };
 
 export default async function ReportsPage() {

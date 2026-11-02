@@ -126,7 +126,7 @@ export async function getInterventionsData(): Promise<InterventionsResponse> {
           measuredMetric: `Measured Gap: ${demoGap.measuredSeconds}s (${Math.round(demoGap.measuredSeconds / 60)} min)`,
           thresholdMetric: `Large Gap Threshold: > ${demoGap.thresholdSeconds}s (1.5× nominal scheduled headway)`,
           recommendedAction: `Deploy standby bus ${reliefRec.standbyBusId} staged at ${reliefRec.stagedTerminalName || demoGap.stopName} with on-shift standby driver ${reliefRec.standbyDriverId} to backfill service gap.`,
-          limitations: reliefRec.limitationsDisclaimer || 'Standby resource feasibility verified only. Deadhead transit travel time, depot clearance, and corridor traffic conditions are not modeled in this demonstration release.',
+          limitations: reliefRec.limitationsDisclaimer || 'Standby resource feasibility verified only. Deadhead transit travel time, depot clearance, and service area traffic conditions are not modeled in this release.',
           sourceView: 'Evening Replay (18:15:00 Peak)',
           sourceTimestamp: eveningView.evaluationTimestamp || 'Not available',
           status: 'proposed'
@@ -148,19 +148,19 @@ export async function getInterventionsData(): Promise<InterventionsResponse> {
         proposals.push({
           id: 'REC-FREQ-CROWD',
           category: 'crowding_frequency',
-          categoryLabel: 'Corridor Frequency Increase Eligibility Review',
+          categoryLabel: 'Service Frequency Increase Eligibility Review',
           priority: 'advisory',
           direction: 'UP',
-          locationName: crowding.peakOccupancyStopName || 'Corridor Monitoring Point',
+          locationName: crowding.peakOccupancyStopName || 'Not available',
           stopId: 'kadubeesanahalli-up',
           busId: crowding.peakOccupancyBusId || 'Not available',
-          tripId: 'Observed peak load trip',
-          conditionDescription: `Peak crowding reached ${crowding.peakOccupancyPct}% (${crowding.peakOnboardPassengers} pax). Evaluated against corridor rule: frequency increase requires ≥ 3 consecutive severely overcrowded stops (≥ 150% capacity).`,
+          tripId: crowding.peakOccupancyTripId || 'Not available',
+          conditionDescription: `Peak crowding reached ${crowding.peakOccupancyPct}% (${crowding.peakOnboardPassengers} pax). Evaluated against operational rule: frequency increase requires ≥ 3 consecutive severely overcrowded stops (≥ 150% capacity).`,
           measuredMetric: `Peak Load: ${crowding.peakOnboardPassengers} pax (${crowding.peakOccupancyPct}%) | Severe Count: ${crowding.severelyOvercrowdedCount} stop visits`,
           thresholdMetric: 'Policy Threshold: ≥ 3 consecutive severely overcrowded stops (≥ 90 pax / 150%)',
           recommendedAction: 'Maintain current timetable frequency. While isolated severe crowding was observed, the sustained 3-consecutive-stop trigger threshold was not reached.',
-          limitations: 'Corridor policy review advisory only. Additional peak frequency requires fleet allocation and crew shift rescheduling, which are outside the scope of synthetic demonstration data.',
-          sourceView: 'Corridor Occupancy Audit (Full Day)',
+          limitations: 'Service policy review advisory only. Additional peak frequency requires fleet allocation and crew shift rescheduling, which are outside the scope of synthetic operational data.',
+          sourceView: 'Service Occupancy Audit (Full Day)',
           sourceTimestamp: '2025-03-10T22:00:00',
           status: 'proposed'
         });
@@ -172,7 +172,7 @@ export async function getInterventionsData(): Promise<InterventionsResponse> {
       data: {
         proposals,
         datasetDate: '10 March 2025',
-        corridor: 'Silk Board ↔ Hebbal | Bengaluru (19.8 km Outer Ring Road)',
+        corridor: 'Silk Board–Hebbal, Bengaluru (19.8 km Outer Ring Road)',
         generatedAt: '2025-03-10T22:00:00Z'
       }
     };

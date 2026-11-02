@@ -5,7 +5,7 @@ import AppShell from "./components/AppShell";
 export const metadata: Metadata = {
   title: "HOGANA — Smart Bus Operations & Mobility Intelligence",
   description:
-    "Silk Board ↔ Hebbal corridor operational intelligence, headway control, and data centre",
+    "Silk Board–Hebbal, Bengaluru service area operational intelligence, headway control, and data centre",
 };
 
 export default function RootLayout({

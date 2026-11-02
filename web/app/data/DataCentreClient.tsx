@@ -76,12 +76,6 @@ function DataCentreBrowser({
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [copiedJson, setCopiedJson] = useState(false);
 
-  // Commuter research filters
-  const [researchSearch, setResearchSearch] = useState("");
-  const [researchProblemFilter, setResearchProblemFilter] = useState<string>("ALL");
-  const [researchPage, setResearchPage] = useState(1);
-  const researchPageSize = 10;
-
   const { datasetDate, corridor, validationReport, files, records } = data;
 
   const handleTabChange = (tab: TabKey) => {
@@ -159,45 +153,15 @@ function DataCentreBrowser({
     setTimeout(() => setCopiedJson(false), 2000);
   };
 
-  // Filtered Commuter Profiles
-  const filteredProfiles = useMemo(() => {
-    if (!researchData?.sampleProfiles) return [];
-    let list = researchData.sampleProfiles;
-
-    if (researchProblemFilter !== "ALL") {
-      list = list.filter((p) =>
-        p.problemsFaced.toLowerCase().includes(researchProblemFilter.toLowerCase())
-      );
-    }
-
-    if (researchSearch.trim()) {
-      const q = researchSearch.toLowerCase().trim();
-      list = list.filter((p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.occupation.toLowerCase().includes(q) ||
-        p.problemsFaced.toLowerCase().includes(q) ||
-        p.usualTravelTime.toLowerCase().includes(q)
-      );
-    }
-
-    return list;
-  }, [researchData, researchProblemFilter, researchSearch]);
-
-  const totalResearchPages = Math.max(1, Math.ceil(filteredProfiles.length / researchPageSize));
-  const paginatedProfiles = useMemo(() => {
-    const start = (researchPage - 1) * researchPageSize;
-    return filteredProfiles.slice(start, start + researchPageSize);
-  }, [filteredProfiles, researchPage, researchPageSize]);
-
   return (
     <div className="space-y-6 pb-12">
       {/* Page Header */}
       <PageHeader
         badge="Data Centre"
         badgeTone="teal"
-        corridor={corridor}
+        serviceArea="Silk Board–Hebbal, Bengaluru"
         title="Data Centre &amp; Audit Provenance"
-        description={`Inspect the 9 validated operational source files, operational assumptions, automated validation checks, and commuter perception research for demonstration date ${datasetDate}.`}
+        description={`Inspect the 9 validated operational source files, operational assumptions, automated validation checks, and commuter perception research for date ${datasetDate}.`}
         actions={
           <div className="flex items-center gap-2">
             {validationReport.valid ? (
@@ -339,22 +303,22 @@ function DataCentreBrowser({
         </div>
       )}
 
-      {/* TAB 2: Commuter Insights — Illustrative Case Study */}
+      {/* TAB 2: Commuter Insights — Aggregate Research Summary */}
       {activeTab === "commuter-research" && researchData && (
         <div className="space-y-6">
-          {/* Illustrative Disclaimer */}
+          {/* Prominent Simulated Workbook Disclosure */}
           <AlertPanel
             severity="info"
-            title="Illustrative Commuter Research Case Study"
-            description="This research analysis is derived from 100 simulated commuter profiles calibrated for the Silk Board ↔ Hebbal corridor. It is strictly illustrative passenger perception context and segregated from operational dispatch, timetable headways, vehicle tracking, and capacity calculations."
+            title="Simulated Illustrative Workbook — Not Real Field Research"
+            description="This research analysis is derived from 100 simulated commuter archetypes calibrated for the Silk Board–Hebbal, Bengaluru service area. It is strictly illustrative passenger perception context and segregated from operational dispatch, timetable headways, vehicle tracking, and capacity calculations. Zero individual respondent profiles or personally identifiable information are retained or transmitted."
           />
 
-          {/* Research Metrics */}
+          {/* Research Aggregate KPIs */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <KpiCard
               label="Peak Travel Concentration"
               value={`${researchData.metrics.peakTravelPatternPct}%`}
-              subValue="88 of 100 commuters"
+              subValue="88 of 100 illustrative profiles"
               benchmark="Morning, evening, or dual peak commute"
               status="warning"
               icon={<Clock className="h-5 w-5 text-amber-600" />}
@@ -362,29 +326,72 @@ function DataCentreBrowser({
             <KpiCard
               label="Rarely or Never Vacant Seat"
               value={`${researchData.metrics.rarelyOrNeverVacantPct}%`}
-              subValue="77 of 100 commuters"
+              subValue="77 of 100 illustrative profiles"
               benchmark="Report buses arriving full without seated room"
               status="alert"
               icon={<TrendingDown className="h-5 w-5 text-rose-600" />}
             />
             <KpiCard
-              label="Corridor Profiles Sampled"
-              value={researchData.metrics.sampleProfiles}
-              subValue="Silk Board ↔ Hebbal"
+              label="Illustrative Profiles Modeled"
+              value={researchData.metrics.totalIllustrativeProfiles}
+              subValue="Silk Board–Hebbal, Bengaluru"
               benchmark="Cross-sectional commuter archetype coverage"
               status="neutral"
               icon={<Users className="h-5 w-5 text-teal-600" />}
             />
           </div>
 
-          {/* 10 Aggregated Commuter Pain Points */}
+          {/* Travel Window Aggregate Distribution */}
           <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
             <div className="mb-4">
               <h2 className="text-base font-bold text-slate-900">
-                10 Core Commuter Pain Points (Reported Frequencies)
+                Commute Time Distribution (Aggregate Archetypes)
               </h2>
               <p className="text-xs text-slate-600 mt-0.5">
-                Surveyed friction points highlighting how headway irregularity and crush occupancy directly impact daily riders.
+                Distribution of travel windows across the 100 illustrative commuter profiles along the Outer Ring Road.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Both Peaks (Dual)</span>
+                <span className="text-2xl font-bold text-slate-900 mt-1 block">
+                  {researchData.metrics.travelWindowDistribution.bothPeaks}%
+                </span>
+                <span className="text-[11px] text-slate-500 mt-0.5 block">38 illustrative profiles</span>
+              </div>
+              <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Morning Peak Only</span>
+                <span className="text-2xl font-bold text-slate-900 mt-1 block">
+                  {researchData.metrics.travelWindowDistribution.morningPeak}%
+                </span>
+                <span className="text-[11px] text-slate-500 mt-0.5 block">28 illustrative profiles</span>
+              </div>
+              <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Evening Peak Only</span>
+                <span className="text-2xl font-bold text-slate-900 mt-1 block">
+                  {researchData.metrics.travelWindowDistribution.eveningPeak}%
+                </span>
+                <span className="text-[11px] text-slate-500 mt-0.5 block">22 illustrative profiles</span>
+              </div>
+              <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Off-Peak Travel</span>
+                <span className="text-2xl font-bold text-slate-900 mt-1 block">
+                  {researchData.metrics.travelWindowDistribution.offPeak}%
+                </span>
+                <span className="text-[11px] text-slate-500 mt-0.5 block">12 illustrative profiles</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 10 Aggregated Commuter Friction Points */}
+          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
+            <div className="mb-4">
+              <h2 className="text-base font-bold text-slate-900">
+                10 Core Commuter Friction Points (Illustrative Mentions)
+              </h2>
+              <p className="text-xs text-slate-600 mt-0.5">
+                Simulated archetype friction points illustrating how headway irregularity and crush occupancy directly impact daily riders.
               </p>
             </div>
 
@@ -400,7 +407,7 @@ function DataCentreBrowser({
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-teal-700">{point.mentions} mentions</span>
+                      <span className="text-xs font-bold text-teal-700">{point.mentions} illustrative mentions</span>
                       <span className="text-xs text-slate-500 font-medium">({point.percentage}%)</span>
                     </div>
                   </div>
@@ -427,146 +434,24 @@ function DataCentreBrowser({
             </div>
           </div>
 
-          {/* 100 Sample Profiles Explorer */}
+          {/* Research Provenance & Methodological Isolation */}
           <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
-              <div>
-                <h3 className="text-base font-bold text-slate-900">
-                  Illustrative Commuter Profiles Explorer (100 Respondents)
-                </h3>
-                <p className="text-xs text-slate-600 mt-0.5">
-                  Filter and inspect individual simulated respondent feedback, commute times, and reported friction.
-                </p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                {/* Search */}
-                <div className="relative">
-                  <Search className="h-3.5 w-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    placeholder="Search commuter..."
-                    value={researchSearch}
-                    onChange={(e) => {
-                      setResearchSearch(e.target.value);
-                      setResearchPage(1);
-                    }}
-                    className="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 w-44"
-                  />
-                </div>
-
-                {/* Problem Filter */}
-                <div className="flex items-center gap-1.5">
-                  <Filter className="h-3.5 w-3.5 text-slate-400" />
-                  <select
-                    value={researchProblemFilter}
-                    onChange={(e) => {
-                      setResearchProblemFilter(e.target.value);
-                      setResearchPage(1);
-                    }}
-                    className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  >
-                    <option value="ALL">All Challenges</option>
-                    <option value="Overcrowding">Overcrowding</option>
-                    <option value="waiting time">Long Waiting</option>
-                    <option value="traffic">Traffic Delays</option>
-                    <option value="bunching">Bus Bunching</option>
-                    <option value="skip">Buses Skip Stops</option>
-                  </select>
-                </div>
-              </div>
+            <h3 className="text-sm font-bold text-slate-900 mb-2">Research Provenance &amp; Isolation Architecture</h3>
+            <div className="space-y-2 text-xs text-slate-600 leading-relaxed">
+              <p>
+                <strong className="text-slate-800">Dataset Title:</strong> {researchData.datasetTitle}
+              </p>
+              <p>
+                <strong className="text-slate-800">Methodology:</strong> {researchData.methodology}
+              </p>
+              <p>
+                <strong className="text-slate-800">Provenance:</strong> {researchData.provenance}
+              </p>
+              <p>
+                <strong className="text-slate-800">Architectural Boundary:</strong> Stored separately under{" "}
+                <code className="text-teal-700 font-mono">data/research/commuter_insights.json</code> and accessed via server-only loader. Fully segregated from the 9 operational source files. Zero individual respondent records or names are transmitted to the browser.
+              </p>
             </div>
-
-            {/* Profiles Table */}
-            <div className="overflow-x-auto border border-slate-200 rounded-lg">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-semibold">
-                  <tr>
-                    <th className="py-2.5 px-3 w-10 text-center">#</th>
-                    <th className="py-2.5 px-3">Commuter</th>
-                    <th className="py-2.5 px-3">Age / Gender</th>
-                    <th className="py-2.5 px-3">Occupation</th>
-                    <th className="py-2.5 px-3">Travel Pattern</th>
-                    <th className="py-2.5 px-3">Seat Availability</th>
-                    <th className="py-2.5 px-3">Reported Problems</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-800">
-                  {paginatedProfiles.length > 0 ? (
-                    paginatedProfiles.map((p) => (
-                      <tr key={p.respondentId} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="py-2 px-3 text-center font-mono text-slate-400 text-[11px]">
-                          {p.respondentId}
-                        </td>
-                        <td className="py-2 px-3 font-semibold text-slate-900">{p.name}</td>
-                        <td className="py-2 px-3 text-slate-600">
-                          {p.age} yrs • {p.gender}
-                        </td>
-                        <td className="py-2 px-3 text-slate-700">{p.occupation}</td>
-                        <td className="py-2 px-3">
-                          <span className="font-medium text-slate-800">{p.travelFrequency}</span>
-                          <span className="block text-[10px] text-slate-500">{p.usualTravelTime}</span>
-                        </td>
-                        <td className="py-2 px-3">
-                          <StatusBadge
-                            status={p.busFoundVacant}
-                            tone={
-                              p.busFoundVacant === "Never"
-                                ? "danger"
-                                : p.busFoundVacant === "Rarely"
-                                ? "warning"
-                                : "neutral"
-                            }
-                            size="sm"
-                          />
-                        </td>
-                        <td className="py-2 px-3 max-w-xs text-[11px] text-slate-600 line-clamp-2">
-                          {p.problemsFaced}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={7} className="py-8 text-center text-slate-500">
-                        No commuter profiles matched your search criteria.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination */}
-            {filteredProfiles.length > 0 && (
-              <div className="flex items-center justify-between mt-3 text-xs text-slate-600">
-                <span>
-                  Showing {(researchPage - 1) * researchPageSize + 1} to{" "}
-                  {Math.min(researchPage * researchPageSize, filteredProfiles.length)} of{" "}
-                  {filteredProfiles.length} profiles
-                </span>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={researchPage <= 1}
-                    onClick={() => setResearchPage((p) => Math.max(1, p - 1))}
-                  >
-                    Previous
-                  </Button>
-                  <span className="px-2 text-slate-700 font-medium">
-                    Page {researchPage} of {totalResearchPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={researchPage >= totalResearchPages}
-                    onClick={() => setResearchPage((p) => Math.min(totalResearchPages, p + 1))}
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -576,9 +461,9 @@ function DataCentreBrowser({
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-100 mb-4">
             <div>
-              <h2 className="text-base font-bold text-slate-900 font-mono">demo_assumptions.json</h2>
+              <h2 className="text-base font-bold text-slate-900 font-mono">assumptions.json (demo_assumptions.json)</h2>
               <p className="text-xs text-slate-600 mt-0.5">
-                Authoritative operating thresholds, corridor endpoints, and demonstration parameters.
+                Authoritative operating thresholds, service endpoints, and operating assumptions.
               </p>
             </div>
             <Button

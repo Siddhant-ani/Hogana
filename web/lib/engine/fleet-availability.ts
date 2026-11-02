@@ -239,8 +239,8 @@ export function evaluateReliefBusRecommendation(
       standbyBusId: null,
       standbyDriverId: null,
       recommendationText:
-        'Relief deployment feasibility cannot be confirmed: Recognized origin terminal not found for corridor and direction.',
-      unconfirmedReason: 'Recognized origin terminal not found for corridor and direction',
+        'Relief deployment feasibility cannot be confirmed: Recognized origin terminal not found for route and direction.',
+      unconfirmedReason: 'Recognized origin terminal not found for route and direction',
       limitationsDisclaimer: LIMITATIONS_DISCLAIMER
     };
   }

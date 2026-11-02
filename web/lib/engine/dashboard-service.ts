@@ -178,6 +178,7 @@ export interface DashboardViewData {
     peakOnboardPassengers: number | null;
     peakOccupancyStopName: string | null;
     peakOccupancyBusId: string | null;
+    peakOccupancyTripId?: string | null;
     severelyOvercrowdedObservations: Array<{
       tripId: string;
       busId: string;
@@ -594,6 +595,7 @@ export async function getDashboardData(requestedView: EvaluationViewId = 'eod'):
     let peakPax = 0;
     let peakStop = 'None';
     let peakBus = 'None';
+    let peakTrip = 'None';
 
     for (const o of validLoads) {
       if (o.occupancyPct !== null && o.occupancyPct > peakOcc) {
@@ -601,6 +603,7 @@ export async function getDashboardData(requestedView: EvaluationViewId = 'eod'):
         peakPax = o.onboardAfter ?? 0;
         peakStop = stopMap.get(o.stopId)?.stop_name ?? o.stopId;
         peakBus = o.busId;
+        peakTrip = o.tripId;
       }
     }
 
@@ -653,13 +656,13 @@ export async function getDashboardData(requestedView: EvaluationViewId = 'eod'):
     };
 
     let viewTitle = 'End-of-Day Audit';
-    let viewSubtitle = 'Audited final-outcome baseline across all 86 planned corridor trips for 10 March 2025.';
+    let viewSubtitle = 'Audited final-outcome baseline across all 86 planned service trips for 10 March 2025.';
     if (isMorning) {
       viewTitle = 'Morning Replay';
-      viewSubtitle = 'As-of corridor replay at 08:24:00 (Morning Peak) — Live bunching scenario at Marathahalli.';
+      viewSubtitle = 'As-of service replay at 08:24:00 (Morning Peak) — Bunching scenario at Marathahalli.';
     } else if (isEvening) {
       viewTitle = 'Evening Replay';
-      viewSubtitle = 'As-of corridor replay at 18:15:00 (Evening Peak) — 1,440s service gap scenario at Hebbal.';
+      viewSubtitle = 'As-of service replay at 18:15:00 (Evening Peak) — 1,440s service gap scenario at Hebbal.';
     }
 
     const currentViewData: DashboardViewData = {
@@ -719,6 +722,7 @@ export async function getDashboardData(requestedView: EvaluationViewId = 'eod'):
         peakOnboardPassengers: peakPax > 0 ? peakPax : null,
         peakOccupancyStopName: peakOcc > 0 ? peakStop : null,
         peakOccupancyBusId: peakOcc > 0 ? peakBus : null,
+        peakOccupancyTripId: peakOcc > 0 ? peakTrip : null,
         severelyOvercrowdedObservations: activeCrowdingAlerts,
         activeSeverelyOvercrowdedAlerts: activeCrowdingAlerts
       },
@@ -732,7 +736,7 @@ export async function getDashboardData(requestedView: EvaluationViewId = 'eod'):
         maintenanceBuses: maintenanceBusesDetails,
         crewShiftStatus,
         limitationsDisclaimer:
-          'Standby deployment advisory: Transit deadhead travel time, depot clearance, and corridor traffic conditions are not modeled in this release. Dispatcher manual authorization is required.'
+          'Standby deployment advisory: Transit deadhead travel time, depot clearance, and service area traffic conditions are not modeled in this release. Dispatcher manual authorization is required.'
       }
     };
 
@@ -751,17 +755,17 @@ export async function getDashboardData(requestedView: EvaluationViewId = 'eod'):
             id: 'morning',
             title: 'Morning Replay',
             timeLabel: '08:24:00 (Morning Peak)',
-            badge: '75s Bunching Demo'
+            badge: '75s Bunching Scenario'
           },
           {
             id: 'evening',
             title: 'Evening Replay',
             timeLabel: '18:15:00 (Evening Peak)',
-            badge: '1,440s Gap Demo'
+            badge: '1,440s Gap Scenario'
           }
         ],
         datasetDate: '10 March 2025',
-        corridorName: 'Silk Board ↔ Hebbal'
+        corridorName: 'Silk Board–Hebbal, Bengaluru'
       }
     };
   } catch (err: unknown) {

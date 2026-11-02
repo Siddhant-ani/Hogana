@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Database,
@@ -13,9 +13,11 @@ import {
   X,
   AlertTriangle,
   Calendar,
-  MapPin,
-  Bus
+  LogOut,
+  User,
+  LogIn
 } from "lucide-react";
+import HoganaBrand from "./ui/HoganaBrand";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -25,12 +27,55 @@ const navigation = [
   { name: "Reports", href: "/reports", icon: FileText },
 ];
 
-export default function AppShell({ children }: { children: React.ReactNode }) {
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  const pathname = usePathname();
+interface SessionUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
 
-  // Root path '/' is the public marketing landing page (no operational sidebar/header)
-  if (pathname === "/") {
+export default function AppShell({ children }: { children: React.ReactNode }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    let isMounted = true;
+    async function checkSession() {
+      try {
+        const res = await fetch("/api/auth/session");
+        const data = await res.json().catch(() => ({}));
+        if (isMounted && data.authenticated && data.user) {
+          setSessionUser(data.user);
+        } else if (isMounted) {
+          setSessionUser(null);
+        }
+      } catch {
+        if (isMounted) setSessionUser(null);
+      }
+    }
+    checkSession();
+    return () => {
+      isMounted = false;
+    };
+  }, [pathname]);
+
+  const handleSignOut = async () => {
+    setIsLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      setSessionUser(null);
+      setIsLoggingOut(false);
+      router.push("/");
+      router.refresh();
+    }
+  };
+
+  // Public landing page and login page use their dedicated public layouts
+  if (pathname === "/" || pathname === "/login") {
     return <main className="flex-1 w-full bg-[#F5F7FA]">{children}</main>;
   }
 
@@ -39,7 +84,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* Top Application Header */}
       <header className="bg-[#12233F] text-white border-b border-[#12233F]/90 px-4 py-3 shrink-0 shadow-sm z-30">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-          {/* Identity & Corridor */}
+          {/* Identity & Branding — ONE unified clickable link navigating to / */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
@@ -49,30 +94,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               >
                 {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
-              <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded bg-[#0F8278] flex items-center justify-center font-bold text-white tracking-wider shadow-inner">
-                  <Bus className="h-4 w-4" />
-                </div>
-                <div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-lg font-bold tracking-tight text-white">
-                      HOGANA
-                    </span>
-                    <span className="hidden sm:inline-block text-xs font-medium text-[#EAF4F7] tracking-wide">
-                      Smart Bus Operations & Mobility Intelligence
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-slate-300">
-                    <MapPin className="h-3 w-3 text-[#0F8278] shrink-0" />
-                    <span className="font-medium text-slate-200">Silk Board ↔ Hebbal</span>
-                    <span className="text-slate-400">|</span>
-                    <span className="text-slate-300">Bengaluru</span>
-                  </div>
-                </div>
-              </div>
+
+              <HoganaBrand variant="dark" showTagline showLocation />
             </div>
 
-            {/* Mobile menu toggle badge */}
+            {/* Mobile status indicator badge */}
             <div className="lg:hidden flex items-center gap-2">
               <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-200 bg-amber-950/70 border border-[#D97706]/70 rounded px-2 py-0.5">
                 <Calendar className="h-2.5 w-2.5" />
@@ -81,8 +107,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          {/* Right Header: Dataset Date & Persistent Synthetic Disclaimer */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs">
+          {/* Right Header: Dataset Date, Persistent Disclosure Banner, and Authentication Controls */}
+          <div className="flex flex-wrap items-center justify-between lg:justify-end gap-2 sm:gap-3 text-xs">
             <div className="hidden lg:flex items-center gap-1.5 text-slate-300 bg-slate-800/80 border border-slate-700/80 rounded-md px-2.5 py-1">
               <Calendar className="h-3.5 w-3.5 text-[#0F8278]" />
               <span>Dataset: <strong className="text-slate-100 font-semibold">10 March 2025</strong></span>
@@ -90,8 +116,38 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             
             <div className="flex items-center gap-1.5 text-amber-200 bg-amber-950/80 border border-[#D97706]/70 rounded-md px-3 py-1 font-medium tracking-tight">
               <AlertTriangle className="h-3.5 w-3.5 text-[#D97706] shrink-0" />
-              <span>Synthetic demonstration data — not connected to live BMTC systems.</span>
+              <span>Illustrative synthetic operational data — not connected to live BMTC systems.</span>
             </div>
+
+            {/* Authentication Controls */}
+            {sessionUser ? (
+              <div className="flex items-center gap-2 pl-1 border-l border-slate-700/80">
+                <div className="flex items-center gap-1.5 bg-slate-800/90 text-slate-200 border border-slate-700/80 px-2.5 py-1 rounded-md">
+                  <User className="h-3.5 w-3.5 text-[#0F8278]" />
+                  <span className="font-semibold text-slate-100 truncate max-w-[120px] sm:max-w-none">
+                    {sessionUser.name}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  disabled={isLoggingOut}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:text-rose-300 transition-colors focus:outline-none focus:ring-2 focus:ring-[#0F8278] disabled:opacity-50"
+                  title="Sign out of HOGANA"
+                >
+                  <LogOut className="h-3.5 w-3.5 text-rose-400" />
+                  <span>{isLoggingOut ? "..." : "Sign out"}</span>
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-semibold text-white bg-[#0F8278] hover:bg-[#0c6961] shadow-2xs transition-colors"
+              >
+                <LogIn className="h-3.5 w-3.5" />
+                <span>Sign in</span>
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -118,7 +174,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         >
           <div className="mb-3 px-3">
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              Corridor Operations
+              Service Operations
             </p>
           </div>
 
@@ -155,19 +211,33 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               href="/"
               className="flex items-center justify-between text-xs font-semibold text-slate-500 hover:text-[#0F8278] p-2 rounded-lg hover:bg-[#F5F7FA] transition-colors"
             >
-              <span>← Public Overview</span>
-              <span className="text-[10px] font-normal text-slate-400">Marketing</span>
+              <span>← Service Area Overview</span>
+              <span className="text-[10px] font-normal text-slate-400">Home</span>
             </Link>
 
             <div className="rounded-lg bg-[#F5F7FA] border border-[#DCE5ED] p-3 text-xs text-slate-600 space-y-1.5">
               <p className="font-semibold text-[#12233F] flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                Route: Silk Board ↔ Hebbal
+                Route: Silk Board–Hebbal, Bengaluru
               </p>
               <p className="text-slate-500 text-[11px] leading-relaxed">
-                24 directional stops across 19.8 km Outer Ring Road corridor. 86 scheduled daily trip slots.
+                24 directional stops across 19.8 km Outer Ring Road service area. 86 scheduled daily trip slots.
               </p>
             </div>
+
+            {/* Mobile Auth action in sidebar */}
+            {sessionUser && (
+              <div className="pt-2 border-t border-slate-100 md:hidden">
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="w-full flex items-center justify-center gap-2 p-2 rounded-lg text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span>Sign out ({sessionUser.name})</span>
+                </button>
+              </div>
+            )}
           </div>
         </nav>
 

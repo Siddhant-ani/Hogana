@@ -316,12 +316,12 @@ export function simulateCrowdingScenario(baseline?: CrowdingBaselineParams): Cro
   }
 
   const cap = baseline.designCapacity;
-  const seated = baseline.seatedCapacity ?? 40;
-  const standing = baseline.standingCapacity ?? 20;
+  const seated = baseline.seatedCapacity !== undefined ? baseline.seatedCapacity : null;
+  const standing = baseline.standingCapacity !== undefined ? baseline.standingCapacity : null;
   const peakPax = baseline.observedPeakPassengers;
   const peakPct = baseline.observedPeakOccupancyPct;
-  const peakStop = baseline.peakStopName ?? 'Unknown stop';
-  const peakTrip = baseline.peakTripId ?? 'Unknown trip';
+  const peakStop = baseline.peakStopName ?? 'Not available';
+  const peakTrip = baseline.peakTripId ?? 'Not available';
   const totalVisits = baseline.totalEvaluatedVisits ?? 0;
   const normalVisits = baseline.normalVisits ?? 0;
   const overcrowdedVisits = baseline.overcrowdedVisits ?? 0;

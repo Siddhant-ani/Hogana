@@ -7,14 +7,6 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/**": ["../data/demo/**/*", "../data/research/**/*"],
   },
-  turbopack: {
-    rules: {
-      "*.css": {
-        loaders: ["@tailwindcss/turbopack"],
-        as: "*.css",
-      },
-    },
-  },
 };
 
 export default nextConfig;

@@ -103,17 +103,43 @@ export default function SimulationClient({ initialData }: SimulationClientProps)
   const [notification, setNotification] = useState<{ message: string; type: "success" | "warning" } | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const { runs, isStorageAvailable } = loadStoredSimRuns();
-      setHistory(runs);
-      if (!isStorageAvailable) {
-        setNotification({
-          message: "Warning: Browser local storage is unavailable. Simulation runs will persist in memory only.",
-          type: "warning"
-        });
-      }
-    }, 0);
-    return () => clearTimeout(timer);
+    // 1. Initialise immediately from local storage
+    const { runs, isStorageAvailable } = loadStoredSimRuns();
+    setHistory(runs);
+
+    // 2. Fetch remote persistent simulation runs from PostgreSQL database
+    fetch("/api/simulation/runs")
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success && Array.isArray(res.data)) {
+          const remoteRuns: StoredSimRun[] = res.data.map((r: { id: string; scenario_type: "holding" | "relief" | "crowding"; summary: string; scenario_outputs: Record<string, unknown>; created_at: string }) => ({
+            id: r.id,
+            scenarioType: r.scenario_type,
+            summary: r.summary,
+            details: typeof r.scenario_outputs === "object" ? JSON.stringify(r.scenario_outputs) : String(r.scenario_outputs || ""),
+            simulatedAt: r.created_at
+          }));
+          if (remoteRuns.length > 0) {
+            setHistory((prev) => {
+              const existingIds = new Set(prev.map((p) => p.id));
+              const newItems = remoteRuns.filter((r) => !existingIds.has(r.id));
+              const merged = [...newItems, ...prev].slice(0, 30);
+              saveStoredSimRuns(merged);
+              return merged;
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not fetch remote persistent simulation runs:", err);
+      });
+
+    if (!isStorageAvailable) {
+      setNotification({
+        message: "Warning: Browser local storage is unavailable. Simulation runs will persist in memory only.",
+        type: "warning"
+      });
+    }
   }, []);
 
   const showNotification = (message: string, type: "success" | "warning" = "success") => {
@@ -150,12 +176,28 @@ export default function SimulationClient({ initialData }: SimulationClientProps)
     };
     const updated = [newRun, ...history.slice(0, 19)];
     setHistory(updated);
-    const saved = saveStoredSimRuns(updated);
-    if (saved) {
-      showNotification("Holding simulation saved to local history.", "success");
-    } else {
-      showNotification("Warning: Storage unavailable; run saved in memory only.", "warning");
-    }
+    saveStoredSimRuns(updated);
+
+    // Persist to PostgreSQL database via API
+    fetch("/api/simulation/runs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        scenarioType: "holding",
+        scenarioInputs: {
+          holdDurationSeconds: holdingResult.holdDurationSeconds,
+          controlStopName: initialData.holding.controlStopName
+        },
+        scenarioOutputs: holdingResult,
+        summary: newRun.summary
+      })
+    })
+      .then((res) => res.json())
+      .catch((err) => {
+        console.warn("Could not persist simulation run to DB:", err);
+      });
+
+    showNotification("Holding simulation saved to local history & database.", "success");
   };
 
   const handleSaveReliefRun = () => {
@@ -168,12 +210,28 @@ export default function SimulationClient({ initialData }: SimulationClientProps)
     };
     const updated = [newRun, ...history.slice(0, 19)];
     setHistory(updated);
-    const saved = saveStoredSimRuns(updated);
-    if (saved) {
-      showNotification("Relief simulation saved to local history.", "success");
-    } else {
-      showNotification("Warning: Storage unavailable; run saved in memory only.", "warning");
-    }
+    saveStoredSimRuns(updated);
+
+    // Persist to PostgreSQL database via API
+    fetch("/api/simulation/runs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        scenarioType: "relief",
+        scenarioInputs: {
+          standbyBusId: selectedBusId,
+          standbyDriverId: selectedDriverId
+        },
+        scenarioOutputs: reliefResult,
+        summary: newRun.summary
+      })
+    })
+      .then((res) => res.json())
+      .catch((err) => {
+        console.warn("Could not persist simulation run to DB:", err);
+      });
+
+    showNotification("Relief simulation saved & persisted to database.", "success");
   };
 
   const handleClearHistory = () => {

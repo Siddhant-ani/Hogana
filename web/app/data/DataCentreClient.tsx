@@ -14,7 +14,8 @@ import {
   Users,
   TrendingDown,
   Clock,
-  Filter
+  Filter,
+  UploadCloud
 } from "lucide-react";
 import type { DataCentreResponse, DataCentreData } from "@/lib/dataset/data-centre-service";
 import type { CommuterResearchResponse } from "@/lib/research/commuter-research-service";
@@ -23,6 +24,7 @@ import KpiCard from "@/app/components/ui/KpiCard";
 import StatusBadge from "@/app/components/ui/StatusBadge";
 import AlertPanel from "@/app/components/ui/AlertPanel";
 import Button from "@/app/components/ui/Button";
+import DataUploadManager from "@/app/components/data/DataUploadManager";
 
 interface DataCentreClientProps {
   initialResponse: DataCentreResponse;
@@ -31,6 +33,7 @@ interface DataCentreClientProps {
 
 type TabKey =
   | "validation"
+  | "upload"
   | "commuter-research"
   | "routes.csv"
   | "stops.csv"
@@ -203,6 +206,18 @@ function DataCentreBrowser({
           >
             <ShieldCheck className="h-4 w-4" />
             <span>Step 1 Validation Suite ({validationReport.totalChecks} Checks)</span>
+          </button>
+
+          <button
+            onClick={() => handleTabChange("upload")}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
+              activeTab === "upload"
+                ? "bg-teal-700 text-white shadow-xs"
+                : "text-teal-800 bg-teal-50 hover:bg-teal-100 border border-teal-200"
+            }`}
+          >
+            <UploadCloud className="h-4 w-4" />
+            <span>Upload &amp; Version Management</span>
           </button>
 
           <button
@@ -482,8 +497,14 @@ function DataCentreBrowser({
         </div>
       )}
 
+      {/* TAB: Upload & Version Management */}
+      {activeTab === "upload" && (
+        <DataUploadManager />
+      )}
+
       {/* TAB: CSV Operational Records Browser */}
       {activeTab !== "validation" &&
+        activeTab !== "upload" &&
         activeTab !== "commuter-research" &&
         activeTab !== "demo_assumptions.json" && (
           <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">

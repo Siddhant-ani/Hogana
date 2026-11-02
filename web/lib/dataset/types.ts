@@ -206,6 +206,8 @@ export interface CompleteDataset {
   assumptions: DemoAssumptions;
 }
 
+export type OperationalDataset = CompleteDataset;
+
 /**
  * Validation result interface.
  */

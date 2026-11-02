@@ -163,7 +163,7 @@ let inFlightLoadPromise: Promise<LoadedDatasetInternal> | null = null;
  * Internal async loader: reads all nine files, parses them, and executes the validation suite.
  * Uses an in-flight Promise cache so simultaneous requests share one dataset loading and validation operation.
  */
-async function loadAndValidateInternal(): Promise<LoadedDatasetInternal> {
+export async function loadAndValidateInternal(): Promise<LoadedDatasetInternal> {
   if (cachedLoad) {
     return cachedLoad;
   }
@@ -270,6 +270,19 @@ export async function getValidatedDataset(): Promise<{
   dataset: CompleteDataset;
   validationReport: DatasetValidationResult;
 }> {
+  if (process.env.DATASET_SOURCE === 'supabase') {
+    try {
+      const { getDatasetRepository } = await import('../supabase/dataset-repository');
+      const repo = getDatasetRepository();
+      if (repo.source === 'supabase_published') {
+        const dataset = await repo.getDataset();
+        const validationReport = validateDataset(dataset);
+        return { dataset, validationReport };
+      }
+    } catch (err) {
+      console.warn('Supabase dataset repository error; falling back to local files:', err);
+    }
+  }
   const { dataset, validationResult } = await loadAndValidateInternal();
   return { dataset, validationReport: validationResult };
 }

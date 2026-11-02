@@ -14,6 +14,7 @@ import 'server-only';
 
 import { getValidatedDataset } from './data-access';
 import type { CompleteDataset, DatasetValidationResult } from './types';
+import { getDatasetRepository } from '../supabase/dataset-repository';
 
 export interface DatasetFileSummary {
   fileName: string;
@@ -30,6 +31,14 @@ export interface DataCentreData {
   corridor: string;
   validationReport: DatasetValidationResult;
   files: DatasetFileSummary[];
+  datasetVersionInfo?: {
+    id: string;
+    name: string;
+    versionNumber: number;
+    date: string;
+    source: string;
+    status: string;
+  };
   records: {
     routes: CompleteDataset['routes'];
     stops: CompleteDataset['stops'];
@@ -54,6 +63,8 @@ export interface DataCentreResponse {
 
 export async function getDataCentreData(): Promise<DataCentreResponse> {
   try {
+    const repo = getDatasetRepository();
+    const versionInfo = await repo.getVersionInfo();
     const { dataset, validationReport } = await getValidatedDataset();
 
     const fileSummaries: DatasetFileSummary[] = [
@@ -135,10 +146,18 @@ export async function getDataCentreData(): Promise<DataCentreResponse> {
       success: true,
       data: {
         datasetName: 'Silk Board–Hebbal, Bengaluru Service Operations Dataset',
-        datasetDate: '10 March 2025',
+        datasetDate: versionInfo.date || '10 March 2025',
         corridor: 'Silk Board–Hebbal, Bengaluru (19.8 km, Outer Ring Road)',
         validationReport,
         files: fileSummaries,
+        datasetVersionInfo: {
+          id: versionInfo.id,
+          name: versionInfo.name,
+          versionNumber: versionInfo.versionNumber,
+          date: versionInfo.date,
+          source: versionInfo.source,
+          status: versionInfo.status
+        },
         records: {
           routes: dataset.routes,
           stops: dataset.stops,

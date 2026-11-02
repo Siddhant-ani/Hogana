@@ -43,6 +43,7 @@ import {
 } from './crowding';
 import { calculateOnTimePerformance } from './schedule-performance';
 import { Stop } from '../dataset/types';
+import { getDatasetRepository } from '../supabase/dataset-repository';
 
 export type EvaluationViewId = 'eod' | 'morning' | 'evening';
 
@@ -243,6 +244,14 @@ export interface DashboardResponse {
     }>;
     datasetDate: string;
     corridorName: string;
+    datasetVersionInfo?: {
+      id: string;
+      name: string;
+      versionNumber: number;
+      date: string;
+      source: string;
+      status: string;
+    };
   };
   error?: {
     message: string;
@@ -255,6 +264,8 @@ export interface DashboardResponse {
  */
 export async function getDashboardData(requestedView: EvaluationViewId = 'eod'): Promise<DashboardResponse> {
   try {
+    const repo = getDatasetRepository();
+    const versionInfo = await repo.getVersionInfo();
     const { dataset, validationReport } = await getValidatedDataset();
     const {
       stops,
@@ -764,8 +775,16 @@ export async function getDashboardData(requestedView: EvaluationViewId = 'eod'):
             badge: '1,440s Gap Scenario'
           }
         ],
-        datasetDate: '10 March 2025',
-        corridorName: 'Silk Board–Hebbal, Bengaluru'
+        datasetDate: versionInfo.date || '10 March 2025',
+        corridorName: 'Silk Board–Hebbal, Bengaluru',
+        datasetVersionInfo: {
+          id: versionInfo.id,
+          name: versionInfo.name,
+          versionNumber: versionInfo.versionNumber,
+          date: versionInfo.date,
+          source: versionInfo.source,
+          status: versionInfo.status
+        }
       }
     };
   } catch (err: unknown) {

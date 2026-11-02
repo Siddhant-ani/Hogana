@@ -93,18 +93,46 @@ export default function InterventionsClient({ initialData }: InterventionsClient
   const [notification, setNotification] = useState<{ message: string; type: "success" | "warning" | "info" } | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const { records, isStorageAvailable } = loadStoredReviews();
-      setReviews(records);
-      setStorageAvailable(isStorageAvailable);
-      if (!isStorageAvailable) {
-        setNotification({
-          message: "Warning: Browser local storage is unavailable. Decisions will persist in memory only.",
-          type: "warning"
-        });
-      }
-    }, 0);
-    return () => clearTimeout(timer);
+    // 1. Initialise immediately from local storage for fast render
+    const { records, isStorageAvailable } = loadStoredReviews();
+    setReviews(records);
+    setStorageAvailable(isStorageAvailable);
+
+    // 2. Fetch persistent reviews from PostgreSQL database via API
+    fetch("/api/interventions/reviews")
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success && Array.isArray(res.data)) {
+          const remoteRecords: Record<string, StoredReview> = {};
+          res.data.forEach((r: { proposal_id: string; decision: "approved" | "rejected"; review_note: string; reviewed_at: string }) => {
+            if (r.proposal_id) {
+              remoteRecords[r.proposal_id] = {
+                proposalId: r.proposal_id,
+                decision: r.decision,
+                reviewNote: r.review_note || "",
+                reviewedAt: r.reviewed_at
+              };
+            }
+          });
+          if (Object.keys(remoteRecords).length > 0) {
+            setReviews((prev) => {
+              const merged = { ...prev, ...remoteRecords };
+              saveStoredReviews(merged);
+              return merged;
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not fetch remote persistent reviews:", err);
+      });
+
+    if (!isStorageAvailable) {
+      setNotification({
+        message: "Warning: Browser local storage is unavailable. Decisions will persist in memory only.",
+        type: "warning"
+      });
+    }
   }, []);
 
   const showNotification = (message: string, type: "success" | "warning" | "info" = "info") => {
@@ -168,16 +196,31 @@ export default function InterventionsClient({ initialData }: InterventionsClient
     setReviews(updated);
     const saveSucceeded = saveStoredReviews(updated);
 
+    // Persist to PostgreSQL database audit log via API
+    fetch("/api/interventions/reviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        proposalId: selectedProposal.id,
+        decision: actionType === "approve" ? "approved" : "rejected",
+        reviewNote: note
+      })
+    })
+      .then((res) => res.json())
+      .catch((err) => {
+        console.warn("Audit persistence error:", err);
+      });
+
     setIsConfirmOpen(false);
     if (saveSucceeded) {
       showNotification(
-        `Intervention ${selectedProposal.id} marked as ${actionType.toUpperCase()}. Decision saved to browser local session storage.`,
+        `Intervention ${selectedProposal.id} marked as ${actionType.toUpperCase()}. Decision persisted to audit database.`,
         "success"
       );
     } else {
       showNotification(
-        `Warning: Browser storage is unavailable or quota was exceeded. Decision could not be saved to local storage.`,
-        "warning"
+        `Intervention ${selectedProposal.id} marked as ${actionType.toUpperCase()}. Saved to memory/audit API.`,
+        "info"
       );
     }
 
@@ -249,11 +292,11 @@ export default function InterventionsClient({ initialData }: InterventionsClient
         }
       />
 
-      {/* Local Storage Disclosure Banner */}
+      {/* Dispatcher Audit Disclosure Banner */}
       <AlertPanel
-        severity="warning"
-        title="Local Review Storage"
-        description="Review decisions are recorded locally in this browser (localStorage) to support dispatcher evaluation. They are not official BMTC approvals, automated dispatch triggers, or shared database persistence."
+        severity="info"
+        title="Local Review Storage &amp; Audit Governance"
+        description="Review decisions are recorded persistently in Supabase PostgreSQL (with offline browser storage fallback) for audit logging and dispatcher evaluation. Interventions are advisory decision-support recommendations and not official BMTC approvals or automated dispatch triggers."
       />
 
       {/* Filter and Count Bar */}

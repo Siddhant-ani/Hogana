@@ -30,7 +30,8 @@ import type {
   VehicleStatus,
   CrewRole,
   CrewStatus,
-  SourceLabel
+  SourceLabel,
+  CompleteDataset
 } from './types';
 
 // Required CSV headers for each schema
@@ -638,5 +639,44 @@ export function parseDemoAssumptionsJson(jsonText: string): DemoAssumptions {
       example_fleet_size: exampleFleetSize,
       example_fleet_note: exampleFleetNote
     }
+  };
+}
+
+/**
+ * Parses all 9 operational files from in-memory buffers into a CompleteDataset.
+ */
+export async function parseDatasetFromBuffers(
+  buffers: Record<string, { buffer: Buffer; filename: string }>
+): Promise<CompleteDataset> {
+  const routesText = buffers['routes.csv']?.buffer.toString('utf8');
+  const stopsText = buffers['stops.csv']?.buffer.toString('utf8');
+  const tripsText = buffers['scheduled_trips.csv']?.buffer.toString('utf8');
+  const stopTimesText = buffers['stop_times.csv']?.buffer.toString('utf8');
+  const passengerLoadsText = buffers['passenger_loads.csv']?.buffer.toString('utf8');
+  const busPositionsText = buffers['bus_positions.csv']?.buffer.toString('utf8');
+  const vehiclesText = buffers['vehicles.csv']?.buffer.toString('utf8');
+  const crewText = buffers['crew_availability.csv']?.buffer.toString('utf8');
+  const assumptionsText = buffers['demo_assumptions.json']?.buffer.toString('utf8');
+
+  if (!routesText) throw new Error('Missing routes.csv');
+  if (!stopsText) throw new Error('Missing stops.csv');
+  if (!tripsText) throw new Error('Missing scheduled_trips.csv');
+  if (!stopTimesText) throw new Error('Missing stop_times.csv');
+  if (!passengerLoadsText) throw new Error('Missing passenger_loads.csv');
+  if (!busPositionsText) throw new Error('Missing bus_positions.csv');
+  if (!vehiclesText) throw new Error('Missing vehicles.csv');
+  if (!crewText) throw new Error('Missing crew_availability.csv');
+  if (!assumptionsText) throw new Error('Missing demo_assumptions.json');
+
+  return {
+    routes: parseRoutesCsv(routesText),
+    stops: parseStopsCsv(stopsText),
+    scheduledTrips: parseScheduledTripsCsv(tripsText),
+    stopTimes: parseStopTimesCsv(stopTimesText),
+    passengerLoads: parsePassengerLoadsCsv(passengerLoadsText),
+    busPositions: parseBusPositionsCsv(busPositionsText),
+    vehicles: parseVehiclesCsv(vehiclesText),
+    crewAvailability: parseCrewAvailabilityCsv(crewText),
+    assumptions: parseDemoAssumptionsJson(assumptionsText)
   };
 }

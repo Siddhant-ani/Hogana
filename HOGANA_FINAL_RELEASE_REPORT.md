@@ -1,5 +1,5 @@
 # HOGANA — Smart Bus Operations & Mobility Intelligence Platform
-## Final Acceptance, Navigation, Authentication & Terminology Release Report
+## Final Acceptance, Supabase Database, Storage, Auth & Navigation Release Report
 
 **Date:** 2026-11-02  
 **Service Area:** Silk Board–Hebbal, Bengaluru (19.8 km Outer Ring Road)  
@@ -10,9 +10,10 @@
 **GitHub Repository:** [https://github.com/Siddhant-ani/Hogana.git](https://github.com/Siddhant-ani/Hogana.git)  
 **Current Release Status:**  
 - **Automated Backend Test Suites:** **314 of 314 Checks PASSED** (0 failures)  
-- **Playwright End-to-End Browser Journeys:** **10 of 10 PASSED** (15.5s, 0 errors)  
-- **Production Webpack / Next.js Build:** **PASSED** (15 routes prerendered cleanly, exit code 0)  
+- **Playwright End-to-End Browser Journeys:** **10 of 10 PASSED** (17.1s, 0 errors)  
+- **Production Webpack / Next.js Build:** **PASSED** (23 static & dynamic routes, exit code 0)  
 - **Production Smoke Test Suite:** **ALL PASSED** (Landing page, login, unauth 307 redirect, auth cookie, all 5 operational routes HTTP 200)  
+- **Database & Storage Integration:** **Supabase PostgreSQL & Storage Fully Integrated** (Free-tier compliant, RLS enabled on all 17 tables)  
 - **Design Tokens & Palette:** **100% Compliant** across all pages (Navy `#12233F`, Teal `#0F8278`, Soft Blue `#EAF4F7`)  
 - **Customer-Facing Terminology:** **0 instances of "Corridor" or "Demo"** in public/internal interfaces  
 
@@ -176,18 +177,58 @@ ALLOW_LOCAL_DEMO_ENQUIRIES=false
 
 ---
 
-### 5. Delivery Instructions
+### 5. Supabase Database, File Storage, Authentication & Data Ingestion Architecture
+
+#### 5.1 Infrastructure & Free-Tier Optimization
+- **Database Engine:** Supabase PostgreSQL with transaction pooling (`port 6543`) and direct session pooling (`port 5432`).
+- **Storage System:** 3 private Supabase storage buckets with Row-Level Security:
+  - `operational-source-files`: Versioned directories for canonical & uploaded operational CSV/JSON datasets.
+  - `research-source-files`: Dedicated isolate for commuter research files (`Bus_Commuter_Survey_100.xlsx`).
+  - `generated-reports`: Storing official EOD, morning/evening reconciliation exports, and audit summaries.
+- **Resource Guardrails:** Real-time free-tier monitoring API (`/api/supabase/status`) tracking storage and database usage against free tier quotas (500 MB DB, 1 GB Storage).
+- **Graceful Fallbacks:** Connection pooling detector catches unconfigured passwords or network limits and operates safely via REST client or local canonical fallback repository.
+
+#### 5.2 Multi-Tenant Organization Schema & RLS
+- **Schema Migrations:**
+  - `20261102000001_initial_schema.sql`: 17 relational tables (`organizations`, `organization_members`, `dataset_versions`, `dataset_files`, 8 operational tables, `intervention_reviews`, `simulation_runs`, `report_exports`, `audit_events`, `commuter_insight_summaries`).
+  - `20261102000002_rls_policies.sql`: Complete Row-Level Security policies enforcing organization tenant isolation and role permissions (`administrator`, `data_manager`, `dispatcher`, `analyst`).
+  - `20261102000003_storage_buckets.sql`: Storage bucket policies restricting upload, read, and delete access.
+  - `20261102000004_seed_operational_records.sql`: Canonical baseline seed migration auto-generated and validated by `scripts/migrate-initial-dataset.mjs`.
+
+#### 5.3 Data Centre Upload & Version Manager (`/data`)
+- **Drag-and-Drop 9-File Ingestion Checklist:**
+  - Validates file presence, naming, and SHA-256 integrity.
+  - Executes Step 1 56-check validator in-memory before database staging.
+  - Displays validation report findings, record breakdown, and publication confirmation modal.
+- **Version History & Rollback:**
+  - Displays all published and staged dataset versions with timestamps, checksums, and author.
+  - One-click rollback capability immediately restores a prior published dataset version as active.
+- **Research Data Isolation:**
+  - Independent tab for uploading perception surveys directly to `research-source-files` bucket.
+  - Completely segregated from operational GTFS/dispatch tables.
+
+#### 5.4 Persistent Workflow Audit Trails
+- **Dispatcher Interventions (`/interventions`):**
+  - Review decisions (Approve/Reject with required operational note) persist to `intervention_reviews` table in PostgreSQL.
+  - Seamless offline localStorage fallback ensures dispatchers are never blocked if network connectivity is interrupted.
+- **Simulation Runs (`/simulation`):**
+  - Parameterized simulation runs (Holding, Standby Relief, Crowding) persist to `simulation_runs` table in PostgreSQL.
+  - Accessible across sessions with deduplication and history review.
+
+---
+
+### 6. Delivery Instructions
 
 To push changes to GitHub and Vercel:
 
 ```bash
 git add .
-git commit -m "feat: HOGANA release with navigation, authentication, and terminology update"
+git commit -m "feat: HOGANA Supabase database, storage, authentication and data ingestion integration"
 git push origin main
 ```
 
 To create the clean release ZIP:
 
 ```bash
-powershell -Command "Compress-Archive -Path .\.env.example, .\README.md, .\docs, .\data, .\web, .\scripts, .\HOGANA_FINAL_RELEASE_REPORT.md -DestinationPath hogana-final-release.zip -Force"
+powershell -Command "Compress-Archive -Path .\.env.example, .\README.md, .\docs, .\data, .\web, .\scripts, .\supabase, .\HOGANA_FINAL_RELEASE_REPORT.md -DestinationPath hogana-final-release.zip -Force"
 ```

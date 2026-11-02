@@ -1,0 +1,14 @@
+bus_id,registration,capacity_seated,capacity_standing,capacity_total,current_location_stop_id,status,source_label
+BUS-01,KA-01-F-1001,40,20,60,silk-board-up,active,synthetic
+BUS-02,KA-01-F-1002,40,20,60,silk-board-up,active,synthetic
+BUS-03,KA-01-F-1003,40,20,60,silk-board-up,active,synthetic
+BUS-04,KA-01-F-1004,40,20,60,silk-board-up,active,synthetic
+BUS-05,KA-01-F-1005,40,20,60,hebbal-down,maintenance,synthetic
+BUS-06,KA-01-F-1006,40,20,60,silk-board-up,active,synthetic
+BUS-07,KA-01-F-1007,40,20,60,silk-board-up,active,synthetic
+BUS-08,KA-01-F-1008,40,20,60,silk-board-up,maintenance,synthetic
+BUS-09,KA-01-F-1009,40,20,60,silk-board-up,active,synthetic
+BUS-10,KA-01-F-1010,40,20,60,silk-board-up,active,synthetic
+BUS-11,KA-01-F-1011,40,20,60,silk-board-up,active,synthetic
+BUS-12,KA-01-F-2001,40,20,60,silk-board-up,standby,synthetic
+BUS-13,KA-01-F-2002,40,20,60,hebbal-down,standby,synthetic

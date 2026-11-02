@@ -1,0 +1,2 @@
+route_id,route_name,origin_terminal,destination_terminal,total_distance_km,source_label
+silk-board-hebbal,Silk Board ↔ Hebbal Corridor,Silk Board Junction,Hebbal Flyover,18.5,synthetic

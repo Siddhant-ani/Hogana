@@ -1,0 +1,87 @@
+trip_id,route_id,direction,bus_id,scheduled_departure,scheduled_arrival,final_outcome,final_outcome_reason,final_outcome_recorded_at,source_label
+T-UP-001,silk-board-hebbal,UP,BUS-01,2025-03-10T07:00:00,2025-03-10T07:55:00,operated,,,synthetic
+T-UP-002,silk-board-hebbal,UP,BUS-02,2025-03-10T07:12:00,2025-03-10T08:07:00,operated,,,synthetic
+T-UP-003,silk-board-hebbal,UP,BUS-03,2025-03-10T07:24:00,2025-03-10T08:19:00,operated,,,synthetic
+T-UP-004,silk-board-hebbal,UP,BUS-04,2025-03-10T07:36:00,2025-03-10T08:31:00,operated,,,synthetic
+T-UP-005,silk-board-hebbal,UP,BUS-05,2025-03-10T07:48:00,2025-03-10T08:43:00,operated,,,synthetic
+T-UP-006,silk-board-hebbal,UP,BUS-06,2025-03-10T08:00:00,2025-03-10T08:55:00,operated,,,synthetic
+T-UP-007,silk-board-hebbal,UP,BUS-07,2025-03-10T08:12:00,2025-03-10T09:07:00,operated,,,synthetic
+T-UP-008,silk-board-hebbal,UP,BUS-08,2025-03-10T08:24:00,2025-03-10T09:19:00,cancelled,Mechanical defect before depot dispatch,2025-03-10T08:10:00,synthetic
+T-UP-009,silk-board-hebbal,UP,BUS-09,2025-03-10T08:36:00,2025-03-10T09:31:00,operated,,,synthetic
+T-UP-010,silk-board-hebbal,UP,BUS-10,2025-03-10T08:48:00,2025-03-10T09:43:00,operated,,,synthetic
+T-UP-011,silk-board-hebbal,UP,BUS-11,2025-03-10T09:00:00,2025-03-10T09:55:00,operated,,,synthetic
+T-UP-012,silk-board-hebbal,UP,BUS-01,2025-03-10T09:12:00,2025-03-10T10:07:00,operated,,,synthetic
+T-UP-013,silk-board-hebbal,UP,BUS-02,2025-03-10T09:24:00,2025-03-10T10:19:00,operated,,,synthetic
+T-UP-014,silk-board-hebbal,UP,BUS-03,2025-03-10T09:36:00,2025-03-10T10:31:00,operated,,,synthetic
+T-UP-015,silk-board-hebbal,UP,BUS-04,2025-03-10T09:48:00,2025-03-10T10:43:00,operated,,,synthetic
+T-DN-001,silk-board-hebbal,DOWN,BUS-05,2025-03-10T10:00:00,2025-03-10T10:55:00,operated,,,synthetic
+T-DN-002,silk-board-hebbal,DOWN,BUS-06,2025-03-10T10:15:00,2025-03-10T11:10:00,operated,,,synthetic
+T-DN-003,silk-board-hebbal,DOWN,BUS-07,2025-03-10T10:30:00,2025-03-10T11:25:00,operated,,,synthetic
+T-DN-004,silk-board-hebbal,DOWN,BUS-09,2025-03-10T10:45:00,2025-03-10T11:40:00,operated,,,synthetic
+T-DN-005,silk-board-hebbal,DOWN,BUS-10,2025-03-10T11:00:00,2025-03-10T11:55:00,operated,,,synthetic
+T-DN-006,silk-board-hebbal,DOWN,BUS-11,2025-03-10T11:15:00,2025-03-10T12:10:00,operated,,,synthetic
+T-DN-007,silk-board-hebbal,DOWN,BUS-01,2025-03-10T11:30:00,2025-03-10T12:25:00,operated,,,synthetic
+T-DN-008,silk-board-hebbal,DOWN,BUS-02,2025-03-10T11:45:00,2025-03-10T12:40:00,operated,,,synthetic
+T-DN-009,silk-board-hebbal,DOWN,BUS-03,2025-03-10T12:00:00,2025-03-10T12:55:00,operated,,,synthetic
+T-DN-010,silk-board-hebbal,DOWN,BUS-04,2025-03-10T12:15:00,2025-03-10T13:10:00,operated,,,synthetic
+T-DN-011,silk-board-hebbal,DOWN,BUS-05,2025-03-10T12:30:00,2025-03-10T13:25:00,operated,,,synthetic
+T-DN-012,silk-board-hebbal,DOWN,BUS-06,2025-03-10T12:45:00,2025-03-10T13:40:00,operated,,,synthetic
+T-DN-013,silk-board-hebbal,DOWN,BUS-07,2025-03-10T13:00:00,2025-03-10T13:55:00,operated,,,synthetic
+T-DN-014,silk-board-hebbal,DOWN,BUS-09,2025-03-10T13:15:00,2025-03-10T14:10:00,operated,,,synthetic
+T-DN-015,silk-board-hebbal,DOWN,BUS-10,2025-03-10T13:30:00,2025-03-10T14:25:00,operated,,,synthetic
+T-DN-016,silk-board-hebbal,DOWN,BUS-11,2025-03-10T13:45:00,2025-03-10T14:40:00,operated,,,synthetic
+T-DN-017,silk-board-hebbal,DOWN,BUS-01,2025-03-10T14:00:00,2025-03-10T14:55:00,operated,,,synthetic
+T-DN-018,silk-board-hebbal,DOWN,BUS-02,2025-03-10T14:15:00,2025-03-10T15:10:00,operated,,,synthetic
+T-DN-019,silk-board-hebbal,DOWN,BUS-03,2025-03-10T14:30:00,2025-03-10T15:25:00,operated,,,synthetic
+T-DN-020,silk-board-hebbal,DOWN,BUS-04,2025-03-10T14:45:00,2025-03-10T15:40:00,operated,,,synthetic
+T-DN-021,silk-board-hebbal,DOWN,BUS-05,2025-03-10T15:00:00,2025-03-10T15:55:00,operated,,,synthetic
+T-DN-022,silk-board-hebbal,DOWN,BUS-06,2025-03-10T15:15:00,2025-03-10T16:10:00,operated,,,synthetic
+T-DN-023,silk-board-hebbal,DOWN,BUS-07,2025-03-10T15:30:00,2025-03-10T16:25:00,operated,,,synthetic
+T-DN-024,silk-board-hebbal,DOWN,BUS-09,2025-03-10T15:45:00,2025-03-10T16:40:00,operated,,,synthetic
+T-DN-025,silk-board-hebbal,DOWN,BUS-10,2025-03-10T16:00:00,2025-03-10T16:55:00,operated,,,synthetic
+T-DN-026,silk-board-hebbal,DOWN,BUS-11,2025-03-10T16:15:00,2025-03-10T17:10:00,operated,,,synthetic
+T-DN-027,silk-board-hebbal,DOWN,BUS-01,2025-03-10T16:30:00,2025-03-10T17:25:00,operated,,,synthetic
+T-DN-028,silk-board-hebbal,DOWN,BUS-02,2025-03-10T16:45:00,2025-03-10T17:40:00,operated,,,synthetic
+T-UP-016,silk-board-hebbal,UP,,2025-03-10T10:00:00,2025-03-10T10:55:00,resource_shortfall,No active vehicle physically present at Silk Board terminal,2025-03-10T09:55:00,synthetic
+T-UP-017,silk-board-hebbal,UP,,2025-03-10T10:15:00,2025-03-10T11:10:00,resource_shortfall,No active vehicle physically present at Silk Board terminal,2025-03-10T09:55:00,synthetic
+T-UP-018,silk-board-hebbal,UP,,2025-03-10T10:30:00,2025-03-10T11:25:00,resource_shortfall,No active vehicle physically present at Silk Board terminal,2025-03-10T09:55:00,synthetic
+T-UP-019,silk-board-hebbal,UP,,2025-03-10T10:45:00,2025-03-10T11:40:00,resource_shortfall,No active vehicle physically present at Silk Board terminal,2025-03-10T09:55:00,synthetic
+T-UP-020,silk-board-hebbal,UP,,2025-03-10T11:00:00,2025-03-10T11:55:00,resource_shortfall,No active vehicle physically present at Silk Board terminal,2025-03-10T09:55:00,synthetic
+T-UP-021,silk-board-hebbal,UP,BUS-05,2025-03-10T11:15:00,2025-03-10T12:10:00,operated,,,synthetic
+T-UP-022,silk-board-hebbal,UP,BUS-06,2025-03-10T11:30:00,2025-03-10T12:25:00,operated,,,synthetic
+T-UP-023,silk-board-hebbal,UP,BUS-07,2025-03-10T11:45:00,2025-03-10T12:40:00,operated,,,synthetic
+T-UP-024,silk-board-hebbal,UP,BUS-09,2025-03-10T12:00:00,2025-03-10T12:55:00,operated,,,synthetic
+T-UP-025,silk-board-hebbal,UP,BUS-10,2025-03-10T12:15:00,2025-03-10T13:10:00,operated,,,synthetic
+T-UP-026,silk-board-hebbal,UP,BUS-11,2025-03-10T12:30:00,2025-03-10T13:25:00,operated,,,synthetic
+T-UP-027,silk-board-hebbal,UP,BUS-01,2025-03-10T12:45:00,2025-03-10T13:40:00,operated,,,synthetic
+T-UP-028,silk-board-hebbal,UP,BUS-02,2025-03-10T13:00:00,2025-03-10T13:55:00,operated,,,synthetic
+T-UP-029,silk-board-hebbal,UP,BUS-03,2025-03-10T13:15:00,2025-03-10T14:10:00,operated,,,synthetic
+T-UP-030,silk-board-hebbal,UP,BUS-04,2025-03-10T13:30:00,2025-03-10T14:25:00,operated,,,synthetic
+T-UP-031,silk-board-hebbal,UP,BUS-05,2025-03-10T13:45:00,2025-03-10T14:40:00,operated,,,synthetic
+T-UP-032,silk-board-hebbal,UP,BUS-06,2025-03-10T14:00:00,2025-03-10T14:55:00,operated,,,synthetic
+T-UP-033,silk-board-hebbal,UP,BUS-07,2025-03-10T14:15:00,2025-03-10T15:10:00,operated,,,synthetic
+T-UP-034,silk-board-hebbal,UP,BUS-09,2025-03-10T14:30:00,2025-03-10T15:25:00,operated,,,synthetic
+T-UP-035,silk-board-hebbal,UP,BUS-10,2025-03-10T14:45:00,2025-03-10T15:40:00,operated,,,synthetic
+T-UP-036,silk-board-hebbal,UP,BUS-11,2025-03-10T15:00:00,2025-03-10T15:55:00,operated,,,synthetic
+T-UP-037,silk-board-hebbal,UP,BUS-01,2025-03-10T15:15:00,2025-03-10T16:10:00,operated,,,synthetic
+T-UP-038,silk-board-hebbal,UP,BUS-02,2025-03-10T15:30:00,2025-03-10T16:25:00,operated,,,synthetic
+T-UP-039,silk-board-hebbal,UP,BUS-03,2025-03-10T15:45:00,2025-03-10T16:40:00,operated,,,synthetic
+T-UP-040,silk-board-hebbal,UP,BUS-04,2025-03-10T16:00:00,2025-03-10T16:55:00,operated,,,synthetic
+T-UP-041,silk-board-hebbal,UP,BUS-05,2025-03-10T16:15:00,2025-03-10T17:10:00,operated,,,synthetic
+T-UP-042,silk-board-hebbal,UP,BUS-06,2025-03-10T16:30:00,2025-03-10T17:25:00,operated,,,synthetic
+T-UP-043,silk-board-hebbal,UP,BUS-07,2025-03-10T16:45:00,2025-03-10T17:40:00,operated,,,synthetic
+T-DN-029,silk-board-hebbal,DOWN,BUS-03,2025-03-10T17:00:00,2025-03-10T17:55:00,operated,,,synthetic
+T-DN-030,silk-board-hebbal,DOWN,BUS-04,2025-03-10T17:12:00,2025-03-10T18:07:00,operated,,,synthetic
+T-DN-031,silk-board-hebbal,DOWN,,2025-03-10T17:24:00,2025-03-10T18:19:00,resource_shortfall,Synthetic allocation-priority shortfall (BUS-05 reserved for T-DN-033; not empty terminal),2025-03-10T17:09:00,synthetic
+T-DN-032,silk-board-hebbal,DOWN,BUS-06,2025-03-10T17:36:00,2025-03-10T18:31:00,operated,,,synthetic
+T-DN-033,silk-board-hebbal,DOWN,BUS-05,2025-03-10T17:48:00,2025-03-10T18:43:00,cancelled,Mechanical defect before terminal dispatch,2025-03-10T17:40:00,synthetic
+T-DN-034,silk-board-hebbal,DOWN,BUS-07,2025-03-10T18:00:00,2025-03-10T18:55:00,operated,,,synthetic
+T-DN-035,silk-board-hebbal,DOWN,BUS-09,2025-03-10T18:12:00,2025-03-10T19:07:00,operated,,,synthetic
+T-DN-036,silk-board-hebbal,DOWN,BUS-10,2025-03-10T18:24:00,2025-03-10T19:19:00,operated,,,synthetic
+T-DN-037,silk-board-hebbal,DOWN,BUS-11,2025-03-10T18:36:00,2025-03-10T19:31:00,operated,,,synthetic
+T-DN-038,silk-board-hebbal,DOWN,BUS-01,2025-03-10T18:48:00,2025-03-10T19:43:00,operated,,,synthetic
+T-DN-039,silk-board-hebbal,DOWN,BUS-02,2025-03-10T19:00:00,2025-03-10T19:55:00,operated,,,synthetic
+T-DN-040,silk-board-hebbal,DOWN,BUS-03,2025-03-10T19:12:00,2025-03-10T20:07:00,operated,,,synthetic
+T-DN-041,silk-board-hebbal,DOWN,BUS-04,2025-03-10T19:24:00,2025-03-10T20:19:00,operated,,,synthetic
+T-DN-042,silk-board-hebbal,DOWN,,2025-03-10T19:36:00,2025-03-10T20:31:00,resource_shortfall,No active vehicle physically present at Hebbal terminal,2025-03-10T19:21:00,synthetic
+T-DN-043,silk-board-hebbal,DOWN,BUS-06,2025-03-10T19:48:00,2025-03-10T20:43:00,operated,,,synthetic

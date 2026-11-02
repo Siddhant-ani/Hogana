@@ -1,0 +1,54 @@
+{
+  "_provenance": "All values are illustrative assumptions from the HeadwayIQ concept PDF. None are verified BMTC data.",
+  "time_window_rules": {
+    "interval_convention": "start-inclusive, end-exclusive: [T_start, T_end)",
+    "departure_formula": "ceil((T_end - T_start) / frequency_minutes)"
+  },
+  "headway": {
+    "nominal_peak_headway_seconds": 720,
+    "nominal_peak_headway_note": "Nominal scheduled service headway (720 seconds = 12 minutes) during peak periods across all scheduled departure slots.",
+    "nominal_offpeak_headway_seconds": 900,
+    "nominal_offpeak_headway_note": "Nominal scheduled service headway (900 seconds = 15 minutes) during off-peak periods.",
+    "bunching_threshold_seconds": 120,
+    "bunching_threshold_note": "Configurable default — no official BMTC source. Two consecutive operating buses at the same stop and direction within this interval trigger a bunching alert.",
+    "large_gap_multiplier": 1.5,
+    "large_gap_note": "A headway exceeding (nominal_scheduled_headway × this multiplier) is flagged as a large gap."
+  },
+  "crowding": {
+    "overcrowding_pct": 100,
+    "overcrowding_note": "Percentage of vehicle capacity_total above which a warning crowding alert fires (100% = passenger load equals total vehicle design capacity).",
+    "severe_overcrowding_pct": 150,
+    "severe_overcrowding_note": "Occupancy at 150% of configured capacity (e.g. 90 passengers on a 60-passenger capacity bus). Derived from the infographic's source-pending 150%-200% overcapacity claim. It represents 1.5× design capacity, not 150% above capacity (which would be 250% load), and is an illustrative threshold, not an independently verified BMTC statistic."
+  },
+  "dispatch_control": {
+    "max_delay_tolerance_seconds": 300,
+    "max_delay_note": "Maximum cumulative delay permitted on a bus before hold recommendations are rejected or capped.",
+    "min_viable_hold_seconds": 30,
+    "min_viable_hold_note": "Minimum hold duration worth issuing to a driver.",
+    "geofence_dwelling_radius_meters": 100,
+    "telemetry_freshness_seconds": 60
+  },
+  "simulator_defaults": {
+    "baseline_cycle_time_minutes": 130,
+    "cycle_time_note": "Illustrative round-trip cycle time assumption (55 min outbound + 10 min recovery at Hebbal + 55 min inbound + 10 min recovery at Silk Board = 130 min) for Silk Board ↔ Hebbal. Used to estimate physical fleet requirements."
+  },
+  "financial": {
+    "fare_revenue_per_bus_per_day_inr": 14000,
+    "fare_revenue_note": "Illustrative assumption from HeadwayIQ concept PDF — not verified BMTC data.",
+    "capacity_loss_fixed_schedule_pct": 25,
+    "capacity_loss_dynamic_dispatch_pct": 8,
+    "capacity_loss_note": "Illustrative assumptions, not measured results.",
+    "revenue_uplift_pct": 3,
+    "revenue_uplift_note": "Illustrative assumption — not a validated outcome.",
+    "cost_per_bus_hour_inr": null,
+    "cost_per_bus_hour_note": "Placeholder — exact value not available from the concept PDF.",
+    "trips_per_hour": null,
+    "trips_per_hour_note": "Placeholder — exact value not available from the concept PDF."
+  },
+  "pricing": {
+    "price_per_bus_per_month_inr": 1200,
+    "price_note": "Proposed commercial assumption, not a validated customer price.",
+    "example_fleet_size": 1000,
+    "example_fleet_note": "Arithmetic example based on the price assumption (1,000 buses × Rs 1,200 = Rs 12,00,000/month), not a customer commitment or revenue forecast."
+  }
+}

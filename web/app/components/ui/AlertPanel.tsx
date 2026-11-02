@@ -22,25 +22,25 @@ export default function AlertPanel({
 }: AlertPanelProps) {
   const config = {
     critical: {
-      container: "border-rose-200 bg-rose-50/40 text-rose-950",
-      icon: <AlertCircle className="h-5 w-5 text-rose-600 shrink-0" />,
-      badge: "bg-rose-100 text-rose-900 border-rose-300",
+      container: "border-[#DC2626]/40 bg-red-50/25 text-[#12233F]",
+      icon: <AlertCircle className="h-5 w-5 text-[#DC2626] shrink-0" />,
+      badge: "bg-red-50 text-[#DC2626] border-red-200",
       badgeText: "Critical Alert"
     },
     warning: {
-      container: "border-amber-200 bg-amber-50/40 text-amber-950",
-      icon: <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />,
-      badge: "bg-amber-100 text-amber-900 border-amber-300",
+      container: "border-[#D97706]/40 bg-amber-50/25 text-[#12233F]",
+      icon: <AlertTriangle className="h-5 w-5 text-[#D97706] shrink-0" />,
+      badge: "bg-amber-50 text-[#D97706] border-amber-200",
       badgeText: "Operational Warning"
     },
     info: {
-      container: "border-teal-200 bg-teal-50/30 text-teal-950",
-      icon: <Info className="h-5 w-5 text-teal-600 shrink-0" />,
-      badge: "bg-teal-100 text-teal-900 border-teal-200",
+      container: "border-[#0F8278]/30 bg-[#EAF4F7]/40 text-[#12233F]",
+      icon: <Info className="h-5 w-5 text-[#0F8278] shrink-0" />,
+      badge: "bg-[#EAF4F7] text-[#0F8278] border-[#0F8278]/30",
       badgeText: "Advisory Intel"
     },
     success: {
-      container: "border-emerald-200 bg-emerald-50/30 text-emerald-950",
+      container: "border-emerald-200 bg-emerald-50/30 text-[#12233F]",
       icon: <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />,
       badge: "bg-emerald-100 text-emerald-900 border-emerald-200",
       badgeText: "Nominal Regularity"
@@ -58,12 +58,12 @@ export default function AlertPanel({
                 {config.badgeText}
               </span>
               {location && (
-                <span className="text-xs font-semibold text-slate-700 bg-white/80 border border-slate-200 px-2 py-0.5 rounded">
+                <span className="text-xs font-semibold text-[#12233F] bg-white/90 border border-[#DCE5ED] px-2 py-0.5 rounded">
                   {location}
                 </span>
               )}
             </div>
-            <h3 className="text-base font-bold text-slate-900 pt-0.5">{title}</h3>
+            <h3 className="text-base font-bold text-[#12233F] pt-0.5">{title}</h3>
             <p className="text-xs text-slate-700 leading-relaxed">{description}</p>
           </div>
         </div>
@@ -72,13 +72,13 @@ export default function AlertPanel({
       </div>
 
       {metrics && metrics.length > 0 && (
-        <div className="mt-3.5 pt-3 border-t border-slate-200/60 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 text-xs">
+        <div className="mt-3.5 pt-3 border-t border-[#DCE5ED] grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 text-xs">
           {metrics.map((m, idx) => (
-            <div key={idx} className="bg-white/80 p-2.5 rounded-lg border border-slate-200/80">
+            <div key={idx} className="bg-white/90 p-2.5 rounded-lg border border-[#DCE5ED]">
               <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">
                 {m.label}
               </span>
-              <span className="font-mono font-bold text-slate-900 text-xs sm:text-sm mt-0.5 block">
+              <span className="font-mono font-bold text-[#12233F] text-xs sm:text-sm mt-0.5 block">
                 {m.value}
               </span>
             </div>

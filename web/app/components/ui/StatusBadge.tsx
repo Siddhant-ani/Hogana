@@ -37,23 +37,23 @@ export default function StatusBadge({
       dot: "bg-emerald-500"
     },
     warning: {
-      badge: "bg-amber-50 text-amber-900 border-amber-200",
-      dot: "bg-amber-500"
+      badge: "bg-amber-50 text-[#D97706] border-amber-200",
+      dot: "bg-[#D97706]"
     },
     danger: {
-      badge: "bg-rose-50 text-rose-900 border-rose-200",
-      dot: "bg-rose-500"
+      badge: "bg-red-50 text-[#DC2626] border-red-200",
+      dot: "bg-[#DC2626]"
     },
     info: {
-      badge: "bg-blue-50 text-blue-900 border-blue-200",
-      dot: "bg-blue-500"
+      badge: "bg-[#EAF4F7] text-[#12233F] border-[#DCE5ED]",
+      dot: "bg-[#0F8278]"
     },
     teal: {
-      badge: "bg-teal-50 text-teal-900 border-teal-200",
-      dot: "bg-teal-500"
+      badge: "bg-[#EAF4F7] text-[#0F8278] border-[#0F8278]/30",
+      dot: "bg-[#0F8278]"
     },
     neutral: {
-      badge: "bg-slate-100 text-slate-700 border-slate-200",
+      badge: "bg-[#F5F7FA] text-[#12233F] border-[#DCE5ED]",
       dot: "bg-slate-400"
     }
   };

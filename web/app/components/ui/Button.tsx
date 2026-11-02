@@ -25,15 +25,15 @@ export default function Button({
 
   const variants = {
     primary:
-      "bg-teal-600 text-white hover:bg-teal-700 active:bg-teal-800 focus-visible:ring-teal-500",
+      "bg-[#0F8278] text-white hover:bg-[#0c6961] active:bg-[#094e48] focus-visible:ring-[#0F8278]",
     secondary:
-      "bg-slate-100 text-slate-800 hover:bg-slate-200 active:bg-slate-300 focus-visible:ring-slate-400 border border-slate-200",
+      "bg-[#EAF4F7] text-[#12233F] hover:bg-[#d8edf3] active:bg-[#cbe3ec] focus-visible:ring-[#0F8278] border border-[#DCE5ED]",
     outline:
-      "bg-white text-slate-700 hover:bg-slate-50 active:bg-slate-100 focus-visible:ring-slate-400 border border-slate-300",
+      "bg-white text-[#12233F] hover:bg-[#F5F7FA] active:bg-[#EAF4F7] focus-visible:ring-[#0F8278] border border-[#DCE5ED]",
     danger:
-      "bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 focus-visible:ring-rose-500",
+      "bg-[#DC2626] text-white hover:bg-[#b91c1c] active:bg-[#991b1b] focus-visible:ring-[#DC2626]",
     ghost:
-      "bg-transparent text-slate-600 hover:bg-slate-100 active:bg-slate-200 focus-visible:ring-slate-400 shadow-none"
+      "bg-transparent text-[#12233F] hover:bg-[#EAF4F7] active:bg-[#d8edf3] focus-visible:ring-[#0F8278] shadow-none"
   }[variant];
 
   const sizes = {

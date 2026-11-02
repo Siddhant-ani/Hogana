@@ -23,23 +23,23 @@ export default function KpiCard({
 }: KpiCardProps) {
   const statusStyles = {
     optimal: {
-      border: "border-slate-200 hover:border-teal-300",
-      pill: "bg-emerald-50 text-emerald-800 border-emerald-200",
-      dot: "bg-emerald-500"
+      border: "border-[#DCE5ED] hover:border-[#0F8278]",
+      pill: "bg-[#EAF4F7] text-[#0F8278] border-[#0F8278]/30",
+      dot: "bg-[#0F8278]"
     },
     warning: {
-      border: "border-amber-200 bg-amber-50/20",
-      pill: "bg-amber-50 text-amber-900 border-amber-200",
-      dot: "bg-amber-500"
+      border: "border-[#D97706]/40 bg-amber-50/25",
+      pill: "bg-amber-50 text-[#D97706] border-amber-200",
+      dot: "bg-[#D97706]"
     },
     alert: {
-      border: "border-rose-200 bg-rose-50/20",
-      pill: "bg-rose-50 text-rose-900 border-rose-200",
-      dot: "bg-rose-500"
+      border: "border-[#DC2626]/40 bg-red-50/25",
+      pill: "bg-red-50 text-[#DC2626] border-red-200",
+      dot: "bg-[#DC2626]"
     },
     neutral: {
-      border: "border-slate-200 hover:border-slate-300",
-      pill: "bg-slate-100 text-slate-700 border-slate-200",
+      border: "border-[#DCE5ED] hover:border-slate-300",
+      pill: "bg-[#F5F7FA] text-[#12233F] border-[#DCE5ED]",
       dot: "bg-slate-400"
     }
   }[status];
@@ -57,7 +57,7 @@ export default function KpiCard({
         </div>
 
         <div className="flex items-baseline gap-2">
-          <span className="text-2xl sm:text-3xl font-mono font-bold tracking-tight text-slate-900">
+          <span className="text-2xl sm:text-3xl font-mono font-bold tracking-tight text-[#12233F]">
             {value}
           </span>
           {subValue && (
@@ -68,7 +68,7 @@ export default function KpiCard({
         </div>
       </div>
 
-      <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs gap-2">
+      <div className="mt-3 pt-3 border-t border-[#DCE5ED]/60 flex items-center justify-between text-xs gap-2">
         <span className="text-slate-500 truncate" title={benchmark || hint}>
           {benchmark || hint || "Corridor Benchmark"}
         </span>

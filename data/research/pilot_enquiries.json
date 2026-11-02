@@ -1,5 +1,35 @@
 [
   {
+    "id": "ENQ-1793635451532",
+    "receivedAt": "2026-11-02T16:04:11.532Z",
+    "name": "Director S. Rao",
+    "organisation": "Bangalore Mobility Operations",
+    "email": "s.rao@bengalurutransport.org",
+    "phone": null,
+    "fleetSize": "51-200",
+    "message": "Interested in evaluating headway regularity and bunching holding on the ORR corridor."
+  },
+  {
+    "id": "ENQ-1793632508564",
+    "receivedAt": "2026-11-02T15:15:08.564Z",
+    "name": "Director S. Rao",
+    "organisation": "Bangalore Mobility Operations",
+    "email": "s.rao@bengalurutransport.org",
+    "phone": null,
+    "fleetSize": "51-200",
+    "message": "Interested in evaluating headway regularity and bunching holding on the ORR corridor."
+  },
+  {
+    "id": "ENQ-1793605223695",
+    "receivedAt": "2026-11-02T07:40:23.695Z",
+    "name": "Director S. Rao",
+    "organisation": "Bangalore Mobility Operations",
+    "email": "s.rao@bengalurutransport.org",
+    "phone": null,
+    "fleetSize": "51-200",
+    "message": "Interested in evaluating headway regularity and bunching holding on the ORR corridor."
+  },
+  {
     "id": "ENQ-1793601237080",
     "receivedAt": "2026-11-02T06:33:57.080Z",
     "name": "Director S. Rao",

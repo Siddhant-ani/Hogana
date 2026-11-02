@@ -29,6 +29,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const pathname = usePathname();
 
+  // Root path '/' is the public marketing landing page (no operational sidebar/header)
+  if (pathname === "/") {
+    return <main className="flex-1 w-full">{children}</main>;
+  }
+
   return (
     <>
       {/* Top Application Header */}
@@ -120,9 +125,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <ul className="space-y-1.5">
             {navigation.map((item) => {
               const isActive =
-                item.href === "/dashboard"
-                  ? pathname === "/" || pathname === "/dashboard"
-                  : pathname === item.href || pathname.startsWith(item.href + "/");
+                pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href + "/"));
               const Icon = item.icon;
               return (
                 <li key={item.name}>
@@ -147,7 +150,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             })}
           </ul>
 
-          <div className="mt-8 border-t border-slate-200 pt-4 px-3">
+          <div className="mt-8 border-t border-slate-200 pt-4 px-3 space-y-3">
+            <Link
+              href="/"
+              className="flex items-center justify-between text-xs font-semibold text-slate-500 hover:text-teal-700 p-2 rounded-lg hover:bg-slate-50 transition-colors"
+            >
+              <span>← Public Overview</span>
+              <span className="text-[10px] font-normal text-slate-400">Marketing</span>
+            </Link>
+
             <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-xs text-slate-600 space-y-1.5">
               <p className="font-semibold text-slate-800 flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>

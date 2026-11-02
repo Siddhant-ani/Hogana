@@ -51,7 +51,7 @@ for (const nftPath of nfts) {
         }
       }
     }
-  } catch (e) {
+  } catch {
     // ignore
   }
 }

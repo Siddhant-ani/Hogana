@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   /* config options here */
   outputFileTracingRoot: path.join(__dirname, "../"),
   outputFileTracingIncludes: {
-    "/**": ["../data/demo/**/*"],
+    "/**": ["../data/demo/**/*", "../data/research/**/*"],
   },
   turbopack: {
     rules: {

@@ -1,9 +1,13 @@
 import { Suspense } from "react";
 import { getDataCentreData } from "@/lib/dataset/data-centre-service";
+import { getCommuterResearchData } from "@/lib/research/commuter-research-service";
 import DataCentreClient from "./DataCentreClient";
 
 export default async function DataPage() {
-  const initialResponse = await getDataCentreData();
+  const [initialResponse, commuterResearch] = await Promise.all([
+    getDataCentreData(),
+    getCommuterResearchData(),
+  ]);
 
   return (
     <Suspense
@@ -13,7 +17,7 @@ export default async function DataPage() {
         </div>
       }
     >
-      <DataCentreClient initialResponse={initialResponse} />
+      <DataCentreClient initialResponse={initialResponse} commuterResearch={commuterResearch} />
     </Suspense>
   );
 }

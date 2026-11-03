@@ -804,12 +804,12 @@ export default function LandingPageClient() {
               <span className="text-xs font-medium text-slate-500 mt-1 block">12 UP + 12 DOWN</span>
             </div>
             <div className="p-5 rounded-xl border border-[#DCE5ED] bg-white shadow-xs">
-              <span className="text-2xl sm:text-3xl font-extrabold text-[#12233F] font-mono block">86 Slots</span>
-              <span className="text-xs font-medium text-slate-500 mt-1 block">Daily Scheduled Trips</span>
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#12233F] font-mono block">200 Trips</span>
+              <span className="text-xs font-medium text-slate-500 mt-1 block">AC Bus Scheduled Trips (Avg)</span>
             </div>
             <div className="p-5 rounded-xl border border-[#DCE5ED] bg-white shadow-xs">
-              <span className="text-2xl sm:text-3xl font-extrabold text-[#12233F] font-mono block">13 Buses</span>
-              <span className="text-xs font-medium text-slate-500 mt-1 block">11 Active + 2 Standby</span>
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#12233F] font-mono block">250 Trips</span>
+              <span className="text-xs font-medium text-slate-500 mt-1 block">Non-AC Bus Scheduled Trips (Avg)</span>
             </div>
           </div>
 

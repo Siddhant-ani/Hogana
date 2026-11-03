@@ -4,10 +4,11 @@ import { signUpWithSupabase } from '@/lib/auth/auth-service';
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
-    const { email, password, name, role } = body as {
+    const { email, password, name, company, role } = body as {
       email?: string;
       password?: string;
       name?: string;
+      company?: string;
       role?: 'administrator' | 'data_manager' | 'dispatcher' | 'analyst';
     };
 
@@ -44,6 +45,7 @@ export async function POST(request: Request) {
       email!.trim(),
       password!,
       name!.trim(),
+      company?.trim(),
       role || 'dispatcher'
     );
 

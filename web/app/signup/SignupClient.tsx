@@ -7,6 +7,7 @@ import {
   Lock,
   Mail,
   User,
+  Building2,
   Briefcase,
   Eye,
   EyeOff,
@@ -23,14 +24,16 @@ export default function SignupClient() {
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
   const [name, setName] = useState("");
+  const [company, setCompany] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"dispatcher" | "data_manager" | "analyst">("dispatcher");
+  const [role, setRole] = useState<"administrator" | "dispatcher" | "data_manager" | "analyst">("administrator");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [fieldErrors, setFieldErrors] = useState<{
     name?: string;
+    company?: string;
     email?: string;
     password?: string;
   }>({});
@@ -41,12 +44,16 @@ export default function SignupClient() {
     setAuthError(null);
 
     // Client-side validation
-    const errors: { name?: string; email?: string; password?: string } = {};
+    const errors: { name?: string; company?: string; email?: string; password?: string } = {};
 
     if (!name.trim()) {
       errors.name = "Full name is required.";
     } else if (name.trim().length < 2) {
       errors.name = "Name must be at least 2 characters.";
+    }
+
+    if (!company.trim()) {
+      errors.company = "Company or bus fleet name is required.";
     }
 
     if (!email.trim()) {
@@ -75,6 +82,7 @@ export default function SignupClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
+          company: company.trim(),
           email: email.trim(),
           password,
           role
@@ -113,13 +121,13 @@ export default function SignupClient() {
 
       {/* Main Signup Form Container */}
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="w-full max-w-md bg-white rounded-2xl border border-[#DCE5ED] p-6 sm:p-8 shadow-sm space-y-6">
+        <div className="w-full max-w-lg bg-white rounded-2xl border border-[#DCE5ED] p-6 sm:p-8 shadow-sm space-y-6">
           <div className="space-y-2 text-center">
             <h1 className="text-2xl font-bold tracking-tight text-[#12233F]">
-              Create HOGANA Account
+              Register Bus Operations Account
             </h1>
-            <p className="text-xs sm:text-sm text-slate-600">
-              Register to access the operations control center, interventions console, and analytics.
+            <p className="text-xs sm:text-sm text-slate-600 max-w-sm mx-auto">
+              Join HOGANA to manage fleet operations, reduce bus bunching, eliminate service gaps, and optimize daily routes.
             </p>
           </div>
 
@@ -139,33 +147,64 @@ export default function SignupClient() {
 
           {/* Signup Form */}
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
-            {/* Full Name Field */}
-            <div className="space-y-1.5">
-              <label htmlFor="name" className="block text-xs font-bold text-[#12233F]">
-                Full Name
-              </label>
-              <div className="relative">
-                <User className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  id="name"
-                  type="text"
-                  autoComplete="name"
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    if (fieldErrors.name) {
-                      setFieldErrors((prev) => ({ ...prev, name: undefined }));
-                    }
-                  }}
-                  placeholder="e.g. Ramesh Kumar"
-                  className={`w-full pl-9 pr-3 py-2 bg-slate-50 border rounded-lg text-sm text-[#12233F] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F8278] transition-all ${
-                    fieldErrors.name ? "border-rose-300 bg-rose-50/30" : "border-[#DCE5ED]"
-                  }`}
-                />
+            {/* Full Name & Company in a responsive 2-col grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Full Name */}
+              <div className="space-y-1.5">
+                <label htmlFor="name" className="block text-xs font-bold text-[#12233F]">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <User className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    id="name"
+                    type="text"
+                    autoComplete="name"
+                    value={name}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      if (fieldErrors.name) {
+                        setFieldErrors((prev) => ({ ...prev, name: undefined }));
+                      }
+                    }}
+                    placeholder="e.g. Ramesh Kumar"
+                    className={`w-full pl-9 pr-3 py-2 bg-slate-50 border rounded-lg text-sm text-[#12233F] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F8278] transition-all ${
+                      fieldErrors.name ? "border-rose-300 bg-rose-50/30" : "border-[#DCE5ED]"
+                    }`}
+                  />
+                </div>
+                {fieldErrors.name && (
+                  <p className="text-xs text-rose-600 font-medium">{fieldErrors.name}</p>
+                )}
               </div>
-              {fieldErrors.name && (
-                <p className="text-xs text-rose-600 font-medium">{fieldErrors.name}</p>
-              )}
+
+              {/* Company / Fleet Name */}
+              <div className="space-y-1.5">
+                <label htmlFor="company" className="block text-xs font-bold text-[#12233F]">
+                  Company / Bus Fleet Name
+                </label>
+                <div className="relative">
+                  <Building2 className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    id="company"
+                    type="text"
+                    value={company}
+                    onChange={(e) => {
+                      setCompany(e.target.value);
+                      if (fieldErrors.company) {
+                        setFieldErrors((prev) => ({ ...prev, company: undefined }));
+                      }
+                    }}
+                    placeholder="e.g. City Express Transit"
+                    className={`w-full pl-9 pr-3 py-2 bg-slate-50 border rounded-lg text-sm text-[#12233F] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F8278] transition-all ${
+                      fieldErrors.company ? "border-rose-300 bg-rose-50/30" : "border-[#DCE5ED]"
+                    }`}
+                  />
+                </div>
+                {fieldErrors.company && (
+                  <p className="text-xs text-rose-600 font-medium">{fieldErrors.company}</p>
+                )}
+              </div>
             </div>
 
             {/* Email Field */}
@@ -186,7 +225,7 @@ export default function SignupClient() {
                       setFieldErrors((prev) => ({ ...prev, email: undefined }));
                     }
                   }}
-                  placeholder="name@agency.transit"
+                  placeholder="name@buscompany.com"
                   className={`w-full pl-9 pr-3 py-2 bg-slate-50 border rounded-lg text-sm text-[#12233F] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0F8278] transition-all ${
                     fieldErrors.email ? "border-rose-300 bg-rose-50/30" : "border-[#DCE5ED]"
                   }`}
@@ -234,10 +273,10 @@ export default function SignupClient() {
               )}
             </div>
 
-            {/* Role Field */}
+            {/* Role Field tailored for Bus Owners & Company Managers */}
             <div className="space-y-1.5">
               <label htmlFor="role" className="block text-xs font-bold text-[#12233F]">
-                Operational Role
+                Your Role in the Company
               </label>
               <div className="relative">
                 <Briefcase className="h-4 w-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -247,11 +286,23 @@ export default function SignupClient() {
                   onChange={(e) => setRole(e.target.value as any)}
                   className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-[#DCE5ED] rounded-lg text-sm text-[#12233F] focus:outline-none focus:ring-2 focus:ring-[#0F8278] transition-all"
                 >
-                  <option value="dispatcher">Operations Dispatcher (Interventions &amp; Real-time Control)</option>
-                  <option value="data_manager">Data Manager (Ingestion, Validation &amp; Rollback)</option>
-                  <option value="analyst">Transit Analyst (Simulation &amp; Service Reports)</option>
+                  <option value="administrator">
+                    Bus Fleet Owner / Director (Full Fleet Oversight &amp; Analytics)
+                  </option>
+                  <option value="dispatcher">
+                    Operations &amp; Dispatch Manager (Daily Service &amp; Real-Time Control)
+                  </option>
+                  <option value="data_manager">
+                    Fleet &amp; Depot Maintenance Manager (Vehicle Availability &amp; Staging)
+                  </option>
+                  <option value="analyst">
+                    Route &amp; Scheduling Manager (Timetables &amp; Service Frequency)
+                  </option>
                 </select>
               </div>
+              <p className="text-[11px] text-slate-500 pt-0.5">
+                Select your functional responsibility within the transit operator or bus company.
+              </p>
             </div>
 
             {/* Submit Action */}
@@ -263,7 +314,7 @@ export default function SignupClient() {
               {isSubmitting ? (
                 <>
                   <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Creating Account...</span>
+                  <span>Registering Account...</span>
                 </>
               ) : (
                 <>

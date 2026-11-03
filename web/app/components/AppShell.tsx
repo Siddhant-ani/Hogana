@@ -75,8 +75,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Public landing page and login page use their dedicated public layouts
-  if (pathname === "/" || pathname === "/login") {
+  // Public landing page, login page, and signup page use their dedicated public layouts
+  if (pathname === "/" || pathname === "/login" || pathname === "/signup") {
     return <main className="flex-1 w-full bg-[#F5F7FA]">{children}</main>;
   }
 

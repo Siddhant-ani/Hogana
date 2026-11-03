@@ -7,6 +7,7 @@ export interface StoredUser {
   id: string;
   email: string;
   name: string;
+  company?: string;
   role: 'administrator' | 'data_manager' | 'dispatcher' | 'analyst';
   organizationId: string;
   salt: string;
@@ -91,6 +92,7 @@ export async function registerUser(params: {
   email: string;
   password: string;
   name: string;
+  company?: string;
   role?: 'administrator' | 'data_manager' | 'dispatcher' | 'analyst';
   organizationId?: string;
 }): Promise<StoredUser> {
@@ -110,6 +112,7 @@ export async function registerUser(params: {
     id,
     email: normalizedEmail,
     name: params.name.trim(),
+    company: params.company?.trim(),
     role: params.role || 'dispatcher',
     organizationId: params.organizationId || 'a0000000-0000-0000-0000-000000000001',
     salt,

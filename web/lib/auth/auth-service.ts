@@ -41,6 +41,7 @@ export async function signUpWithSupabase(
   email: string,
   password: string,
   name: string,
+  company?: string,
   role: 'administrator' | 'data_manager' | 'dispatcher' | 'analyst' = 'dispatcher'
 ): Promise<LoginResult> {
   const normalizedEmail = email.toLowerCase().trim();
@@ -66,6 +67,7 @@ export async function signUpWithSupabase(
       email: normalizedEmail,
       password,
       name,
+      company,
       role
     });
   } catch (err: unknown) {

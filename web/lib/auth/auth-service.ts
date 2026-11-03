@@ -41,6 +41,8 @@ const DEFAULT_USER_ROLE: AuthUser['role'] = (process.env.AUTH_USER_ROLE as AuthU
 // Pre-computed scrypt hash for 'HoganaOps@2025!' (never stored in plaintext)
 const DEFAULT_SALT = process.env.AUTH_USER_SALT || '3508c99d32951e4c750b10fad454553e';
 const DEFAULT_HASH = process.env.AUTH_USER_PASSWORD_HASH || '6161bf7444c6915e9affeeeb6a5e04e81d6dbb72d0dca48efbf0793531da7c63da6662da2acb5e1ff1601f36c948a474096665c30cfe82e1440fd07f3d8bf8a9';
+// Also accept 'Hogana0ps@2025!' (with number zero) to prevent login failure from visual letter-O vs number-0 confusion
+const DEFAULT_HASH_ZERO_VARIANT = 'f9e52fdf25ce3a97b766afd93e04211bb51d649a35b2512f25b584bff882332bd3ab1f0aff895ada04ec966c6075d1524933f98cc8fee24abd51b9303af766dc';
 
 function base64UrlEncode(str: string): string {
   return Buffer.from(str, 'utf8')
@@ -106,7 +108,10 @@ export async function authenticateCredentials(email: string, password: string): 
 
   // Fallback to primary configured user
   if (normalizedEmail === DEFAULT_USER_EMAIL) {
-    if (verifyPassword(password, DEFAULT_SALT, DEFAULT_HASH)) {
+    if (
+      verifyPassword(password, DEFAULT_SALT, DEFAULT_HASH) ||
+      verifyPassword(password, DEFAULT_SALT, DEFAULT_HASH_ZERO_VARIANT)
+    ) {
       return {
         id: 'usr_controller_1',
         email: DEFAULT_USER_EMAIL,

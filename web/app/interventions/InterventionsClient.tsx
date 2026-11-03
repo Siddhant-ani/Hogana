@@ -296,7 +296,7 @@ export default function InterventionsClient({ initialData }: InterventionsClient
       <AlertPanel
         severity="info"
         title="Local Review Storage &amp; Audit Governance"
-        description="Review decisions are recorded persistently in Supabase PostgreSQL (with offline browser storage fallback) for audit logging and dispatcher evaluation. Interventions are advisory decision-support recommendations and not official BMTC approvals or automated dispatch triggers."
+        description="Review decisions are recorded persistently in the operations database (with offline browser storage fallback) for audit logging and dispatcher evaluation. Interventions are advisory decision-support recommendations and not official BMTC approvals or automated dispatch triggers."
       />
 
       {/* Filter and Count Bar */}

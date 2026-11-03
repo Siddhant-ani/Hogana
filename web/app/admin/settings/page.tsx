@@ -18,7 +18,7 @@ export default function SettingsPage() {
         <p className="max-w-md mx-auto text-sm text-gray-500">
           Admin controls for managing configurable assumptions (fare revenue,
           capacity loss percentages, pricing model) and user role management
-          will be built after Supabase integration.
+          will be built in an upcoming administrative release.
         </p>
       </div>
     </section>

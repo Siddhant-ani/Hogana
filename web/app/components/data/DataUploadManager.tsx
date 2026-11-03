@@ -245,41 +245,6 @@ export default function DataUploadManager() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner: Supabase Free-Tier Storage & Connectivity */}
-      <div className="rounded-xl border border-[#DCE5ED] bg-white p-5 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Database className="h-4 w-4 text-[#0F8278]" />
-              <h3 className="font-bold text-[#12233F] text-sm">Supabase PostgreSQL &amp; Private Storage</h3>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-                Free Plan Active
-              </span>
-            </div>
-            <p className="text-xs text-slate-500">
-              Private storage buckets for original source files, versioned relational tables, and signed download exports.
-            </p>
-          </div>
-
-          {usage && (
-            <div className="flex items-center gap-4 text-xs bg-slate-50 border border-slate-200 rounded-lg p-2.5">
-              <div>
-                <span className="text-slate-400 block text-[10px]">Database Storage</span>
-                <span className="font-semibold text-[#12233F]">
-                  {(usage.databaseStorageBytes / (1024 * 1024)).toFixed(1)} MB / 500 MB
-                </span>
-              </div>
-              <div className="border-l border-slate-200 pl-4">
-                <span className="text-slate-400 block text-[10px]">File Storage</span>
-                <span className="font-semibold text-[#12233F]">
-                  {(usage.fileStorageBytes / (1024 * 1024)).toFixed(1)} MB / 1 GB
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* Sub-Tabs for Upload Sections */}
       <div className="flex border-b border-[#DCE5ED] gap-2">
         <button
@@ -342,7 +307,7 @@ export default function DataUploadManager() {
             <div>
               <h4 className="font-bold text-[#12233F] text-base">Upload Complete 9-File Operational Dataset</h4>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                An operational version requires all nine approved files. Files are parsed using the validated parser, audited against 56 rules, and stored permanently in Supabase private storage.
+                An operational version requires all nine approved files. Files are parsed using the validated parser, audited against 56 rules, and stored permanently in secure versioned storage.
               </p>
             </div>
 

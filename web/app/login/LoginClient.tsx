@@ -55,25 +55,36 @@ export default function LoginClient() {
     setIsSubmitting(true);
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), password })
+        body: JSON.stringify({ email: email.trim(), password }),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok || !data.success) {
-        setAuthError(data.message || "Authentication failed. Please verify your credentials.");
+        setAuthError(
+          data.message ||
+            "Authentication failed. If you have not created an account for this email yet, click 'Create Account / Sign up' below, or use the Demo Operator credentials."
+        );
         setIsSubmitting(false);
         return;
       }
 
-      // Successful login -> Redirect to callbackUrl
-      router.push(callbackUrl);
-      router.refresh();
+      // Hard redirect to callbackUrl ensures browser immediately attaches session cookie
+      window.location.href = callbackUrl;
     } catch (err: unknown) {
-      setAuthError(err instanceof Error ? err.message : "Network error. Please try again.");
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setAuthError("Authentication request timed out. Please try again or use the Demo Operator credentials.");
+      } else {
+        setAuthError(err instanceof Error ? err.message : "Network error. Please try again.");
+      }
       setIsSubmitting(false);
     }
   };

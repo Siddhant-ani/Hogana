@@ -77,6 +77,9 @@ export default function SignupClient() {
     setIsSubmitting(true);
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -86,9 +89,11 @@ export default function SignupClient() {
           email: email.trim(),
           password,
           role
-        })
+        }),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok || !data.success) {
@@ -97,11 +102,14 @@ export default function SignupClient() {
         return;
       }
 
-      // Successful registration & auto-login -> Redirect to callbackUrl
-      router.push(callbackUrl);
-      router.refresh();
+      // Hard redirect to callbackUrl ensures browser immediately attaches session cookie
+      window.location.href = callbackUrl;
     } catch (err: unknown) {
-      setAuthError(err instanceof Error ? err.message : "Network error. Please try again.");
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setAuthError("Registration request timed out. Please try again.");
+      } else {
+        setAuthError(err instanceof Error ? err.message : "Network error. Please try again.");
+      }
       setIsSubmitting(false);
     }
   };

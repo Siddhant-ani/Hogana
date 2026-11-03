@@ -35,7 +35,13 @@ export function getSupabaseConfigStatus(): SupabaseConfigStatus {
   if (!publishableKey) missingKeys.push('SUPABASE_PUBLISHABLE_KEY (or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)');
   if (!secretKey && !serviceRoleKey) missingKeys.push('SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY');
 
-  const isConfigured = Boolean(url && publishableKey && (secretKey || serviceRoleKey));
+  const isPlaceholder = Boolean(
+    url?.includes('your-project-id') ||
+    publishableKey?.includes('your_key') ||
+    publishableKey?.includes('placeholder')
+  );
+
+  const isConfigured = Boolean(url && publishableKey && (secretKey || serviceRoleKey) && !isPlaceholder);
 
   return {
     isConfigured,

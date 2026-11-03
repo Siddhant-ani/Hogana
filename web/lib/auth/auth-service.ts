@@ -139,17 +139,29 @@ export async function loginWithSupabase(email: string, password: string): Promis
   const normalizedEmail = email.toLowerCase().trim();
   const cookieStore = await cookies();
 
-  // 1. If Supabase is configured, attempt Supabase Auth
+  // 1. If Supabase is configured, attempt Supabase Auth with safe 4-second timeout
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseServerClient(cookieStore);
     if (supabase) {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: normalizedEmail,
-        password
-      });
+      let authResponse: any = null;
+      try {
+        const timeoutPromise = new Promise<{ data: any; error: any }>((_, reject) =>
+          setTimeout(() => reject(new Error('Supabase authentication timeout')), 4000)
+        );
+        authResponse = await Promise.race([
+          supabase.auth.signInWithPassword({
+            email: normalizedEmail,
+            password
+          }),
+          timeoutPromise
+        ]);
+      } catch {
+        // Fall back to persistent local store if Supabase times out or network error
+        authResponse = null;
+      }
 
-      if (!error && data.user) {
-        const user = data.user;
+      if (authResponse && !authResponse.error && authResponse.data?.user) {
+        const user = authResponse.data.user;
         let orgId = (user.user_metadata?.organization_id as string) || 'a0000000-0000-0000-0000-000000000001';
         let role: AuthUser['role'] = (user.user_metadata?.role as AuthUser['role']) || 'dispatcher';
 

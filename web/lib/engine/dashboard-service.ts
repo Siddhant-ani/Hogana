@@ -243,6 +243,7 @@ export interface DashboardResponse {
       badge: string;
     }>;
     datasetDate: string;
+    serviceAreaName: string;
     corridorName: string;
     datasetVersionInfo?: {
       id: string;
@@ -470,7 +471,7 @@ export async function getDashboardData(requestedView: EvaluationViewId = 'eod'):
             isPartialCorrection: holdEval.recommendation.isPartialCorrection,
             recommendationText: holdEval.recommendation.recommendationText,
             disclaimer:
-              'Dispatcher Advisory: This is a decision-support advisory hold recommendation. Implementation requires manual authorization by the corridor dispatcher. Automatic dispatch intervention is prohibited.'
+              'Dispatcher Advisory: This is a decision-support advisory hold recommendation. Implementation requires manual authorization by the operations dispatcher. Automatic dispatch intervention is prohibited.'
           };
         }
       }
@@ -776,6 +777,7 @@ export async function getDashboardData(requestedView: EvaluationViewId = 'eod'):
           }
         ],
         datasetDate: versionInfo.date || '10 March 2025',
+        serviceAreaName: 'Silk Board–Hebbal, Bengaluru',
         corridorName: 'Silk Board–Hebbal, Bengaluru',
         datasetVersionInfo: {
           id: versionInfo.id,

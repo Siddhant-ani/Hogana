@@ -4,45 +4,45 @@
 -- =============================================================================
 
 -- Register the 9 canonical source files
-INSERT INTO dataset_files (organization_id, dataset_version_id, file_name, file_type, file_size_bytes, sha256_hash, storage_path, line_count, validation_passed, validation_errors)
-VALUES ('a0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'routes.csv', 'csv', 187, '3a82524a7b1b981e52c720035ff150a0d1e61555f5cdb73c2e47119dfb3a8197', 'org_a0000000-0000-0000-0000-000000000001/v1/routes.csv', 2, TRUE, '[]'::jsonb)
-ON CONFLICT (dataset_version_id, file_name) DO UPDATE SET file_size_bytes = EXCLUDED.file_size_bytes, sha256_hash = EXCLUDED.sha256_hash;
+INSERT INTO dataset_files (dataset_version_id, original_filename, storage_path, file_type, file_size, checksum, row_count, validation_result)
+VALUES ('b0000000-0000-0000-0000-000000000001', 'routes.csv', 'a0000000-0000-0000-0000-000000000001/b0000000-0000-0000-0000-000000000001/routes.csv', 'csv', 187, '3a82524a7b1b981e52c720035ff150a0d1e61555f5cdb73c2e47119dfb3a8197', 1, '{"valid": true}'::jsonb)
+ON CONFLICT (dataset_version_id, original_filename) DO UPDATE SET file_size = EXCLUDED.file_size, checksum = EXCLUDED.checksum;
 
-INSERT INTO dataset_files (organization_id, dataset_version_id, file_name, file_type, file_size_bytes, sha256_hash, storage_path, line_count, validation_passed, validation_errors)
-VALUES ('a0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'stops.csv', 'csv', 2310, 'c94236a962870cf1220101e82767a1d83ae130abce0c825b129f615ff3572c2c', 'org_a0000000-0000-0000-0000-000000000001/v1/stops.csv', 25, TRUE, '[]'::jsonb)
-ON CONFLICT (dataset_version_id, file_name) DO UPDATE SET file_size_bytes = EXCLUDED.file_size_bytes, sha256_hash = EXCLUDED.sha256_hash;
+INSERT INTO dataset_files (dataset_version_id, original_filename, storage_path, file_type, file_size, checksum, row_count, validation_result)
+VALUES ('b0000000-0000-0000-0000-000000000001', 'stops.csv', 'a0000000-0000-0000-0000-000000000001/b0000000-0000-0000-0000-000000000001/stops.csv', 'csv', 2310, 'c94236a962870cf1220101e82767a1d83ae130abce0c825b129f615ff3572c2c', 24, '{"valid": true}'::jsonb)
+ON CONFLICT (dataset_version_id, original_filename) DO UPDATE SET file_size = EXCLUDED.file_size, checksum = EXCLUDED.checksum;
 
-INSERT INTO dataset_files (organization_id, dataset_version_id, file_name, file_type, file_size_bytes, sha256_hash, storage_path, line_count, validation_passed, validation_errors)
-VALUES ('a0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'scheduled_trips.csv', 'csv', 9382, '922f2cc3ccc71ab063fa718d4b7c6551aeeb10003825d0784d694b2ca0551672', 'org_a0000000-0000-0000-0000-000000000001/v1/scheduled_trips.csv', 87, TRUE, '[]'::jsonb)
-ON CONFLICT (dataset_version_id, file_name) DO UPDATE SET file_size_bytes = EXCLUDED.file_size_bytes, sha256_hash = EXCLUDED.sha256_hash;
+INSERT INTO dataset_files (dataset_version_id, original_filename, storage_path, file_type, file_size, checksum, row_count, validation_result)
+VALUES ('b0000000-0000-0000-0000-000000000001', 'scheduled_trips.csv', 'a0000000-0000-0000-0000-000000000001/b0000000-0000-0000-0000-000000000001/scheduled_trips.csv', 'csv', 9382, '922f2cc3ccc71ab063fa718d4b7c6551aeeb10003825d0784d694b2ca0551672', 86, '{"valid": true}'::jsonb)
+ON CONFLICT (dataset_version_id, original_filename) DO UPDATE SET file_size = EXCLUDED.file_size, checksum = EXCLUDED.checksum;
 
-INSERT INTO dataset_files (organization_id, dataset_version_id, file_name, file_type, file_size_bytes, sha256_hash, storage_path, line_count, validation_passed, validation_errors)
-VALUES ('a0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'stop_times.csv', 'csv', 117355, 'e31521a337099f8fbac12c93feb730d0c9c49a47e1d058d633fd4787f5c8ad8d', 'org_a0000000-0000-0000-0000-000000000001/v1/stop_times.csv', 1033, TRUE, '[]'::jsonb)
-ON CONFLICT (dataset_version_id, file_name) DO UPDATE SET file_size_bytes = EXCLUDED.file_size_bytes, sha256_hash = EXCLUDED.sha256_hash;
+INSERT INTO dataset_files (dataset_version_id, original_filename, storage_path, file_type, file_size, checksum, row_count, validation_result)
+VALUES ('b0000000-0000-0000-0000-000000000001', 'stop_times.csv', 'a0000000-0000-0000-0000-000000000001/b0000000-0000-0000-0000-000000000001/stop_times.csv', 'csv', 117355, 'e31521a337099f8fbac12c93feb730d0c9c49a47e1d058d633fd4787f5c8ad8d', 1032, '{"valid": true}'::jsonb)
+ON CONFLICT (dataset_version_id, original_filename) DO UPDATE SET file_size = EXCLUDED.file_size, checksum = EXCLUDED.checksum;
 
-INSERT INTO dataset_files (organization_id, dataset_version_id, file_name, file_type, file_size_bytes, sha256_hash, storage_path, line_count, validation_passed, validation_errors)
-VALUES ('a0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'passenger_loads.csv', 'csv', 59095, '25801f4a87f178c34d994133a265a7cd53916f55cc5bbe9ca3275cdbf4c3b569', 'org_a0000000-0000-0000-0000-000000000001/v1/passenger_loads.csv', 925, TRUE, '[]'::jsonb)
-ON CONFLICT (dataset_version_id, file_name) DO UPDATE SET file_size_bytes = EXCLUDED.file_size_bytes, sha256_hash = EXCLUDED.sha256_hash;
+INSERT INTO dataset_files (dataset_version_id, original_filename, storage_path, file_type, file_size, checksum, row_count, validation_result)
+VALUES ('b0000000-0000-0000-0000-000000000001', 'passenger_loads.csv', 'a0000000-0000-0000-0000-000000000001/b0000000-0000-0000-0000-000000000001/passenger_loads.csv', 'csv', 59095, '25801f4a87f178c34d994133a265a7cd53916f55cc5bbe9ca3275cdbf4c3b569', 924, '{"valid": true}'::jsonb)
+ON CONFLICT (dataset_version_id, original_filename) DO UPDATE SET file_size = EXCLUDED.file_size, checksum = EXCLUDED.checksum;
 
-INSERT INTO dataset_files (organization_id, dataset_version_id, file_name, file_type, file_size_bytes, sha256_hash, storage_path, line_count, validation_passed, validation_errors)
-VALUES ('a0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'bus_positions.csv', 'csv', 428897, 'b6a6550b81b6c2bd75986e6fa7e33dfcd5b3fda0c498bb2e5a10acc37d5b4559', 'org_a0000000-0000-0000-0000-000000000001/v1/bus_positions.csv', 4377, TRUE, '[]'::jsonb)
-ON CONFLICT (dataset_version_id, file_name) DO UPDATE SET file_size_bytes = EXCLUDED.file_size_bytes, sha256_hash = EXCLUDED.sha256_hash;
+INSERT INTO dataset_files (dataset_version_id, original_filename, storage_path, file_type, file_size, checksum, row_count, validation_result)
+VALUES ('b0000000-0000-0000-0000-000000000001', 'bus_positions.csv', 'a0000000-0000-0000-0000-000000000001/b0000000-0000-0000-0000-000000000001/bus_positions.csv', 'csv', 428897, 'b6a6550b81b6c2bd75986e6fa7e33dfcd5b3fda0c498bb2e5a10acc37d5b4559', 4376, '{"valid": true}'::jsonb)
+ON CONFLICT (dataset_version_id, original_filename) DO UPDATE SET file_size = EXCLUDED.file_size, checksum = EXCLUDED.checksum;
 
-INSERT INTO dataset_files (organization_id, dataset_version_id, file_name, file_type, file_size_bytes, sha256_hash, storage_path, line_count, validation_passed, validation_errors)
-VALUES ('a0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'vehicles.csv', 'csv', 902, 'dbd3233530a56b328d308828cf631012703e2ceeb8cff1d10a661e58671ce122', 'org_a0000000-0000-0000-0000-000000000001/v1/vehicles.csv', 14, TRUE, '[]'::jsonb)
-ON CONFLICT (dataset_version_id, file_name) DO UPDATE SET file_size_bytes = EXCLUDED.file_size_bytes, sha256_hash = EXCLUDED.sha256_hash;
+INSERT INTO dataset_files (dataset_version_id, original_filename, storage_path, file_type, file_size, checksum, row_count, validation_result)
+VALUES ('b0000000-0000-0000-0000-000000000001', 'vehicles.csv', 'a0000000-0000-0000-0000-000000000001/b0000000-0000-0000-0000-000000000001/vehicles.csv', 'csv', 902, 'dbd3233530a56b328d308828cf631012703e2ceeb8cff1d10a661e58671ce122', 13, '{"valid": true}'::jsonb)
+ON CONFLICT (dataset_version_id, original_filename) DO UPDATE SET file_size = EXCLUDED.file_size, checksum = EXCLUDED.checksum;
 
-INSERT INTO dataset_files (organization_id, dataset_version_id, file_name, file_type, file_size_bytes, sha256_hash, storage_path, line_count, validation_passed, validation_errors)
-VALUES ('a0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'crew_availability.csv', 'csv', 1307, '68a7a2594e62ca5cf92debf3d0fcb1e5c1241d7b9412519310cd33c7762bbd9a', 'org_a0000000-0000-0000-0000-000000000001/v1/crew_availability.csv', 25, TRUE, '[]'::jsonb)
-ON CONFLICT (dataset_version_id, file_name) DO UPDATE SET file_size_bytes = EXCLUDED.file_size_bytes, sha256_hash = EXCLUDED.sha256_hash;
+INSERT INTO dataset_files (dataset_version_id, original_filename, storage_path, file_type, file_size, checksum, row_count, validation_result)
+VALUES ('b0000000-0000-0000-0000-000000000001', 'crew_availability.csv', 'a0000000-0000-0000-0000-000000000001/b0000000-0000-0000-0000-000000000001/crew_availability.csv', 'csv', 1307, '68a7a2594e62ca5cf92debf3d0fcb1e5c1241d7b9412519310cd33c7762bbd9a', 24, '{"valid": true}'::jsonb)
+ON CONFLICT (dataset_version_id, original_filename) DO UPDATE SET file_size = EXCLUDED.file_size, checksum = EXCLUDED.checksum;
 
-INSERT INTO dataset_files (organization_id, dataset_version_id, file_name, file_type, file_size_bytes, sha256_hash, storage_path, line_count, validation_passed, validation_errors)
-VALUES ('a0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'demo_assumptions.json', 'json', 3465, '6fdc8b067146a65ec7502f3260fb0eccb8b6c63c54fa3f2032afd93416162fff', 'org_a0000000-0000-0000-0000-000000000001/v1/demo_assumptions.json', 54, TRUE, '[]'::jsonb)
-ON CONFLICT (dataset_version_id, file_name) DO UPDATE SET file_size_bytes = EXCLUDED.file_size_bytes, sha256_hash = EXCLUDED.sha256_hash;
+INSERT INTO dataset_files (dataset_version_id, original_filename, storage_path, file_type, file_size, checksum, row_count, validation_result)
+VALUES ('b0000000-0000-0000-0000-000000000001', 'demo_assumptions.json', 'a0000000-0000-0000-0000-000000000001/b0000000-0000-0000-0000-000000000001/demo_assumptions.json', 'json', 3465, '6fdc8b067146a65ec7502f3260fb0eccb8b6c63c54fa3f2032afd93416162fff', 1, '{"valid": true}'::jsonb)
+ON CONFLICT (dataset_version_id, original_filename) DO UPDATE SET file_size = EXCLUDED.file_size, checksum = EXCLUDED.checksum;
 
 -- Routes (1 record)
 INSERT INTO routes (organization_id, dataset_version_id, route_id, route_short_name, route_long_name, route_type, agency_id, source_label)
-VALUES ('a0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'silk-board-hebbal', 'silk-board-hebbal', 'Silk Board ↔ Hebbal Corridor', 3, 'BMTC', 'synthetic')
+VALUES ('a0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'silk-board-hebbal', 'silk-board-hebbal', 'Silk Board ↔ Hebbal Service Area', 3, NULL, 'synthetic')
 ON CONFLICT (dataset_version_id, route_id) DO NOTHING;
 
 -- Stops (24 records)

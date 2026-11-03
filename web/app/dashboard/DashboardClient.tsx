@@ -283,19 +283,19 @@ export default function DashboardClient({ responses }: DashboardClientProps) {
                 </div>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-200/80 text-amber-900 border border-amber-300">
-                Actionable Hold
+                Actionable Hold (75s)
               </span>
             </div>
 
             <div className="space-y-1.5 text-xs text-slate-700">
               <p>
-                <strong className="text-slate-900">What happened:</strong> Leading trip 103 (KA-01-F-1003) and trailing trip 104 (KA-01-F-1004) arrived within 45 seconds of each other.
+                <strong className="text-slate-900">What happened:</strong> Leading trip T-UP-004 (BUS-04) and trailing trip T-UP-005 (BUS-05) arrived within 75 seconds of each other.
               </p>
               <p>
-                <strong className="text-slate-900">Where:</strong> Marathahalli Bridge (Stop ID: STOP_007, Northbound to Hebbal).
+                <strong className="text-slate-900">Where:</strong> Marathahalli Bridge UP (Stop: marathahalli-up, Northbound to Hebbal).
               </p>
               <p>
-                <strong className="text-slate-900">Threshold crossed:</strong> 45s observed separation vs. minimum 120s bunching threshold (scheduled headway: 360s).
+                <strong className="text-slate-900">Threshold crossed:</strong> 75s observed separation vs. minimum 120s bunching threshold (scheduled headway: 360s). Max hold: 300s; projected separation: 375s.
               </p>
               <p className="text-amber-900 font-medium">
                 <strong>Why review:</strong> Prevents downstream passenger starvation, uneven passenger boarding delays, and inefficient double-bus convoying. Recommend holding trailing bus at Marathahalli control point.
@@ -316,22 +316,22 @@ export default function DashboardClient({ responses }: DashboardClientProps) {
                 </div>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-200/80 text-rose-900 border border-rose-300">
-                Relief Dispatch
+                Relief Feasible (1,440s)
               </span>
             </div>
 
             <div className="space-y-1.5 text-xs text-slate-700">
               <p>
-                <strong className="text-slate-900">What happened:</strong> 1,020s (17.0 min) elapsed between consecutive arrivals, leaving Hebbal outbound queue unserviced.
+                <strong className="text-slate-900">What happened:</strong> 1,440s (24.0 min) elapsed between consecutive departures: BUS-06 on T-DN-026 (17:36:00) and BUS-07 on T-DN-027 (18:00:00).
               </p>
               <p>
-                <strong className="text-slate-900">Where:</strong> Hebbal Terminal (Stop ID: STOP_013, Southbound to Silk Board).
+                <strong className="text-slate-900">Where:</strong> Hebbal Terminal DOWN (Stop: hebbal-dn, Southbound to Silk Board).
               </p>
               <p>
-                <strong className="text-slate-900">Threshold crossed:</strong> 1,020s gap vs. 720s (1.5× 480s scheduled evening peak interval).
+                <strong className="text-slate-900">Threshold crossed:</strong> 1,440s gap vs. 1,080s threshold (1.5× 720s scheduled evening peak interval).
               </p>
               <p className="text-rose-900 font-medium">
-                <strong>Why review:</strong> Halts severe platform crowding and passenger wait times. Dispatch standby vehicle KA-01-F-1021 with rostered reserve crew from Hebbal depot.
+                <strong>Why review:</strong> Halts severe platform crowding and passenger wait times. Standby vehicle BUS-13 and driver CREW-24 confirmed staged and ready for immediate dispatch from Hebbal.
               </p>
             </div>
           </div>
@@ -349,19 +349,19 @@ export default function DashboardClient({ responses }: DashboardClientProps) {
                 </div>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-200/80 text-rose-900 border border-rose-300">
-                160% Occupancy
+                153.3% Occupancy
               </span>
             </div>
 
             <div className="space-y-1.5 text-xs text-slate-700">
               <p>
-                <strong className="text-slate-900">What happened:</strong> Trip 106 observed 96 passengers onboard a 60-passenger capacity vehicle.
+                <strong className="text-slate-900">What happened:</strong> Trip T-UP-006 (BUS-06) observed 92 passengers onboard a 60-passenger capacity vehicle.
               </p>
               <p>
-                <strong className="text-slate-900">Where:</strong> Kadubeesanahalli (Stop ID: STOP_005, Northbound).
+                <strong className="text-slate-900">Where:</strong> Kadubeesanahalli UP (Stop: kadubeesanahalli-up, Northbound).
               </p>
               <p>
-                <strong className="text-slate-900">Threshold crossed:</strong> 160% occupancy vs. 150% severe overcrowding safety limit.
+                <strong className="text-slate-900">Threshold crossed:</strong> 153.3% peak load (92 pax vs. 60 total capacity) exceeding severe overcrowding threshold.
               </p>
               <p className="text-rose-900 font-medium">
                 <strong>Why review:</strong> Immediate passenger safety concern, prolonged stop dwell times worsening bunching behind, and pass-ups at subsequent tech park stops.
@@ -369,7 +369,7 @@ export default function DashboardClient({ responses }: DashboardClientProps) {
             </div>
           </div>
 
-          {/* Attention Card 4: Staffing Shortfall Trips on Route UP/DOWN */}
+          {/* Attention Card 4: Resource Shortfalls & Mechanical Defect Cancellations */}
           <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-4 space-y-3">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2">
@@ -377,27 +377,27 @@ export default function DashboardClient({ responses }: DashboardClientProps) {
                   <Bus className="h-4 w-4" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold text-amber-950">Staffing Shortfall Trips on Route UP/DOWN</h3>
-                  <span className="text-[10px] text-amber-800 font-medium">Depot Crew Allocation</span>
+                  <h3 className="text-xs font-bold text-amber-950">Resource Shortfalls &amp; Mechanical Cancellations</h3>
+                  <span className="text-[10px] text-amber-800 font-medium">Non-Operated Trips Reconciliation</span>
                 </div>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-200/80 text-amber-900 border border-amber-300">
-                7 Uncrewed Trips
+                7 Shortfalls / 2 Defects
               </span>
             </div>
 
             <div className="space-y-1.5 text-xs text-slate-700">
               <p>
-                <strong className="text-slate-900">What happened:</strong> 7 planned service trips unfulfilled due to morning depot crew shortages (trips 115, 117, 122, 131, 145, 149, 158).
+                <strong className="text-slate-900">What happened:</strong> 7 resource shortfalls (6 physical vehicle deficits T-UP-016–020, T-DN-042 + 1 allocation hold on T-DN-031) and 2 mechanical defect cancellations before dispatch (T-UP-008 at depot, T-DN-033 at terminal).
               </p>
               <p>
                 <strong className="text-slate-900">Where:</strong> Both directions (Silk Board &amp; Hebbal departures).
               </p>
               <p>
-                <strong className="text-slate-900">Threshold crossed:</strong> 7 shortfall cancellations (8.1% of daily schedule).
+                <strong className="text-slate-900">Threshold crossed:</strong> 9 non-operated trips (10.5% of 86 scheduled trips). 77 operated trips completed.
               </p>
               <p className="text-amber-900 font-medium">
-                <strong>Why review:</strong> Pre-trip crew sign-on failure; requires dynamic re-rostering from reserve driver pool to protect headway standards and avoid unannounced service dropouts.
+                <strong>Why review:</strong> Differentiates staging deficits from mechanical defects before dispatch; protects operational accountability and verifies reserve staging.
               </p>
             </div>
           </div>

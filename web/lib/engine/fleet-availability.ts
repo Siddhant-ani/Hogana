@@ -196,7 +196,7 @@ export function evaluateReliefBusRecommendation(
   const {
     gapAlert,
     routeId,
-    routeName = 'Silk Board ↔ Hebbal Corridor',
+    routeName = 'Silk Board ↔ Hebbal Service Area',
     direction,
     vehicles,
     crewAvailability,

@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { publishDatasetVersion } from '@/lib/supabase/ingestion-service';
-import { DEFAULT_ORG_ID } from '@/lib/supabase/persistence-service';
+import { requireServerAuth } from '@/lib/auth/server-auth';
 
 export async function POST(req: NextRequest) {
   try {
+    // Enforce data_manager or administrator
+    const auth = await requireServerAuth(req, ['data_manager', 'administrator']);
+    if (!auth.authorized) {
+      return auth.response;
+    }
+
+    const { user } = auth;
     const body = await req.json();
-    const { versionId, userId = 'operator@hogana.transit' } = body;
+    const { versionId } = body;
 
     if (!versionId) {
       return NextResponse.json(
@@ -14,7 +21,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const result = await publishDatasetVersion(DEFAULT_ORG_ID, versionId, userId);
+    const result = await publishDatasetVersion(user.organizationId, versionId, user.id);
     return NextResponse.json(result, { status: result.success ? 200 : 400 });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Publish error';

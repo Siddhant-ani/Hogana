@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { authenticateCredentials, createSessionToken, setSessionCookie } from '@/lib/auth/auth-service';
+import { loginWithSupabase } from '@/lib/auth/auth-service';
 
 export async function POST(request: Request) {
   try {
@@ -29,29 +29,21 @@ export async function POST(request: Request) {
       );
     }
 
-    const user = await authenticateCredentials(email!, password!);
+    const result = await loginWithSupabase(email!, password!);
 
-    if (!user) {
+    if (!result.success || !result.user) {
       return NextResponse.json(
         {
           success: false,
-          message: 'Invalid email address or password. Please verify your credentials and try again.'
+          message: result.message || 'Invalid email address or password. Please verify your credentials and try again.'
         },
         { status: 401 }
       );
     }
 
-    const token = createSessionToken(user);
-    await setSessionCookie(token);
-
     return NextResponse.json({
       success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role
-      },
+      user: result.user,
       message: 'Authentication successful.'
     });
   } catch (err: unknown) {

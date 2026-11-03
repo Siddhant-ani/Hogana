@@ -1,17 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ingestOperationalDataset, IngestionUploadItem } from '@/lib/supabase/ingestion-service';
 import { uploadFileToBucket, BUCKETS } from '@/lib/supabase/storage-service';
-import { DEFAULT_ORG_ID, recordAuditEvent } from '@/lib/supabase/persistence-service';
+import { recordAuditEvent } from '@/lib/supabase/persistence-service';
+import { requireServerAuth } from '@/lib/auth/server-auth';
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Authorize caller server-side (enforcing data_manager or administrator role)
+    const auth = await requireServerAuth(req, ['data_manager', 'administrator']);
+    if (!auth.authorized) {
+      return auth.response;
+    }
+
+    const { user } = auth;
+    const orgId = user.organizationId;
+    const userId = user.id;
+
     const formData = await req.formData();
     const datasetType = (formData.get('datasetType') as string) || 'operational';
     const datasetName = (formData.get('datasetName') as string) || '';
     const datasetDate = (formData.get('datasetDate') as string) || new Date().toISOString().slice(0, 10);
-    const userId = (formData.get('userId') as string) || 'operator@hogana.transit';
 
-    // 1. RESEARCH DATA UPLOAD WORKFLOW (KEPT STRICTLY SEPARATE)
+    // 2. RESEARCH DATA UPLOAD WORKFLOW (KEPT STRICTLY SEPARATE)
     if (datasetType === 'research') {
       const researchFile = formData.get('file') as File | null;
       if (!researchFile) {
@@ -33,7 +43,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const storagePath = `${DEFAULT_ORG_ID}/research/${Date.now()}_${researchFile.name}`;
+      const storagePath = `${orgId}/research/${Date.now()}_${researchFile.name}`;
       const uploadResult = await uploadFileToBucket(
         BUCKETS.RESEARCH,
         storagePath,
@@ -42,7 +52,7 @@ export async function POST(req: NextRequest) {
       );
 
       await recordAuditEvent(
-        DEFAULT_ORG_ID,
+        orgId,
         userId,
         'research_file_uploaded',
         'research_source',
@@ -50,7 +60,8 @@ export async function POST(req: NextRequest) {
         {
           filename: researchFile.name,
           fileSize: fileBuffer.length,
-          classification: 'research_only_aggregate'
+          classification: 'research_only_aggregate',
+          uploadedBy: userId
         }
       );
 
@@ -67,7 +78,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 2. OPERATIONAL DATASET UPLOAD WORKFLOW
+    // 3. OPERATIONAL DATASET UPLOAD WORKFLOW
     const files: IngestionUploadItem[] = [];
     const entries = Array.from(formData.entries());
 
@@ -90,7 +101,7 @@ export async function POST(req: NextRequest) {
     }
 
     const ingestionResult = await ingestOperationalDataset(
-      DEFAULT_ORG_ID,
+      orgId,
       userId,
       datasetName,
       datasetDate,

@@ -7,7 +7,7 @@
 INSERT INTO organizations (id, organization_name, organization_type)
 VALUES (
     'a0000000-0000-0000-0000-000000000001',
-    'Bengaluru Metropolitan Transport Corporation (BMTC) — Pilot Evaluation',
+    'HOGANA Transit Operations — Silk Board–Hebbal Pilot',
     'transit_agency'
 ) ON CONFLICT (id) DO UPDATE SET
     organization_name = EXCLUDED.organization_name;
@@ -40,7 +40,7 @@ INSERT INTO dataset_versions (
     6481, -- 1 + 24 + 86 + 1032 + 924 + 4376 + 13 + 24 + 1
     true,
     '{"passed": 56, "failed": 0, "status": "valid", "rulesEvaluated": 56}'::jsonb,
-    '{"cost_per_bus_hour_inr": 850, "trips_per_hour": 5, "holding_max_delay_seconds": 300, "bunching_threshold_seconds": 120, "gap_threshold_multiplier": 1.5}'::jsonb
+    '{"cost_per_bus_hour_inr": null, "trips_per_hour": null, "holding_max_delay_seconds": 300, "bunching_threshold_seconds": 120, "gap_threshold_multiplier": 1.5}'::jsonb
 ) ON CONFLICT (organization_id, version_number) DO UPDATE SET
     is_active = true,
     status = 'published';

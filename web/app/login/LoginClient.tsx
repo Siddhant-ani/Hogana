@@ -207,46 +207,16 @@ export default function LoginClient() {
             </button>
           </form>
 
-          {/* Pilot Evaluation Credentials Notice */}
-          <div className="p-3 bg-[#EAF4F7] border border-[#0F8278]/25 rounded-xl text-xs text-slate-700 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 font-bold text-[#0F8278]">
-                <Info className="h-3.5 w-3.5" />
-                <span>Pilot Evaluation Access</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setEmail("operator@hogana.transit");
-                  setPassword("HoganaOps@2025!");
-                  setFieldErrors({});
-                  setAuthError(null);
-                }}
-                className="text-[11px] font-bold text-[#0F8278] hover:text-[#0c6961] underline cursor-pointer"
-              >
-                Auto-fill credentials
-              </button>
-            </div>
-            <p className="text-[11px] text-slate-600 leading-relaxed">
-              For pilot verification, use authorized credentials:
-              <br />
-              Email: <code className="font-mono text-[#12233F] font-semibold">operator@hogana.transit</code>
-              <br />
-              Password: <code className="font-mono text-[#12233F] font-semibold">HoganaOps@2025!</code>{" "}
-              <span className="text-[10px] text-slate-500">(Letter 'O', not number zero)</span>
-            </p>
-          </div>
-
           {/* Security Features */}
           <div className="pt-2 border-t border-[#DCE5ED] flex items-center justify-center gap-4 text-[11px] text-slate-500">
             <span className="flex items-center gap-1">
               <ShieldCheck className="h-3.5 w-3.5 text-[#0F8278]" />
-              HTTP-Only Cookies
+              Secure HTTP-Only Session
             </span>
             <span>•</span>
             <span className="flex items-center gap-1">
               <CheckCircle2 className="h-3.5 w-3.5 text-[#0F8278]" />
-              Scrypt Hashed
+              Supabase Auth Verified
             </span>
           </div>
         </div>

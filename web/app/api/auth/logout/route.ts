@@ -1,13 +1,10 @@
 import { NextResponse } from 'next/server';
-import { clearSessionCookie } from '@/lib/auth/auth-service';
+import { logoutSupabase } from '@/lib/auth/auth-service';
 
 export async function POST() {
   try {
-    await clearSessionCookie();
-    return NextResponse.json({
-      success: true,
-      message: 'Logged out successfully. Server session has been invalidated.'
-    });
+    const result = await logoutSupabase();
+    return NextResponse.json(result);
   } catch (err: unknown) {
     console.error('Logout error:', err);
     return NextResponse.json(

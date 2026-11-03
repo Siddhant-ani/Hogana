@@ -69,7 +69,8 @@ CREATE TABLE IF NOT EXISTS dataset_files (
     uploaded_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     processing_status TEXT NOT NULL DEFAULT 'uploaded',
     row_count INT NOT NULL DEFAULT 0,
-    validation_result JSONB
+    validation_result JSONB,
+    CONSTRAINT uq_dataset_files_version_file UNIQUE (dataset_version_id, original_filename)
 );
 
 CREATE INDEX IF NOT EXISTS idx_dataset_files_version ON dataset_files(dataset_version_id);
@@ -93,7 +94,8 @@ CREATE TABLE IF NOT EXISTS routes (
     route_type INT DEFAULT 3,
     agency_id TEXT,
     source_label TEXT NOT NULL DEFAULT 'synthetic',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT uq_routes_version_route UNIQUE (dataset_version_id, route_id)
 );
 CREATE INDEX IF NOT EXISTS idx_routes_version ON routes(dataset_version_id);
 CREATE INDEX IF NOT EXISTS idx_routes_route_id ON routes(dataset_version_id, route_id);
@@ -114,7 +116,8 @@ CREATE TABLE IF NOT EXISTS stops (
     is_control_point BOOLEAN NOT NULL DEFAULT false,
     is_terminal BOOLEAN NOT NULL DEFAULT false,
     source_label TEXT NOT NULL DEFAULT 'synthetic',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT uq_stops_version_stop UNIQUE (dataset_version_id, stop_id)
 );
 CREATE INDEX IF NOT EXISTS idx_stops_version ON stops(dataset_version_id);
 CREATE INDEX IF NOT EXISTS idx_stops_dir_seq ON stops(dataset_version_id, direction, stop_sequence_order);
@@ -138,7 +141,8 @@ CREATE TABLE IF NOT EXISTS scheduled_trips (
     final_outcome_reason TEXT,
     final_outcome_recorded_at TEXT,
     source_label TEXT NOT NULL DEFAULT 'synthetic',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT uq_trips_version_trip UNIQUE (dataset_version_id, trip_id)
 );
 CREATE INDEX IF NOT EXISTS idx_scheduled_trips_version ON scheduled_trips(dataset_version_id);
 CREATE INDEX IF NOT EXISTS idx_scheduled_trips_trip_id ON scheduled_trips(dataset_version_id, trip_id);
@@ -158,7 +162,8 @@ CREATE TABLE IF NOT EXISTS stop_times (
     actual_departure TEXT,
     dwell_time_seconds INT,
     source_label TEXT NOT NULL DEFAULT 'synthetic',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT uq_stoptimes_version_trip_seq UNIQUE (dataset_version_id, trip_id, stop_sequence)
 );
 CREATE INDEX IF NOT EXISTS idx_stop_times_version ON stop_times(dataset_version_id);
 CREATE INDEX IF NOT EXISTS idx_stop_times_trip_seq ON stop_times(dataset_version_id, trip_id, stop_sequence);
@@ -182,7 +187,8 @@ CREATE TABLE IF NOT EXISTS passenger_loads (
     occupancy_percentage DOUBLE PRECISION,
     measurement_method TEXT,
     source_label TEXT NOT NULL DEFAULT 'synthetic',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT uq_loads_version_trip_seq UNIQUE (dataset_version_id, trip_id, stop_sequence)
 );
 CREATE INDEX IF NOT EXISTS idx_passenger_loads_version ON passenger_loads(dataset_version_id);
 CREATE INDEX IF NOT EXISTS idx_passenger_loads_trip_seq ON passenger_loads(dataset_version_id, trip_id, stop_sequence);
@@ -204,7 +210,8 @@ CREATE TABLE IF NOT EXISTS bus_positions (
     heading INT,
     distance_along_corridor_m DOUBLE PRECISION,
     source_label TEXT NOT NULL DEFAULT 'synthetic',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT uq_positions_version_pos UNIQUE (dataset_version_id, position_id)
 );
 CREATE INDEX IF NOT EXISTS idx_bus_positions_version ON bus_positions(dataset_version_id);
 CREATE INDEX IF NOT EXISTS idx_bus_positions_bus_ts ON bus_positions(dataset_version_id, bus_id, timestamp);
@@ -224,7 +231,8 @@ CREATE TABLE IF NOT EXISTS vehicles (
     status TEXT NOT NULL,
     depot_assignment TEXT,
     source_label TEXT NOT NULL DEFAULT 'synthetic',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT uq_vehicles_version_bus UNIQUE (dataset_version_id, bus_id)
 );
 CREATE INDEX IF NOT EXISTS idx_vehicles_version ON vehicles(dataset_version_id);
 CREATE INDEX IF NOT EXISTS idx_vehicles_bus_id ON vehicles(dataset_version_id, bus_id);
@@ -244,7 +252,8 @@ CREATE TABLE IF NOT EXISTS crew_availability (
     status TEXT NOT NULL,
     depot_location TEXT,
     source_label TEXT NOT NULL DEFAULT 'synthetic',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT uq_crew_version_crew UNIQUE (dataset_version_id, crew_id)
 );
 CREATE INDEX IF NOT EXISTS idx_crew_version ON crew_availability(dataset_version_id);
 CREATE INDEX IF NOT EXISTS idx_crew_crew_id ON crew_availability(dataset_version_id, crew_id);
@@ -325,3 +334,113 @@ CREATE TABLE IF NOT EXISTS commuter_insight_summaries (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_commuter_insights_org ON commuter_insight_summaries(organization_id);
+
+-- ------------------------------------------------------------------------------
+-- 5. ATOMIC RPC FUNCTIONS: PUBLISH & ROLLBACK (TRANSACTION-SAFE)
+-- ------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION publish_dataset_version(
+    p_org_id UUID,
+    p_version_id UUID,
+    p_user_id UUID DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_status TEXT;
+    v_files_count INT;
+    v_target_org UUID;
+BEGIN
+    -- 1. Verify existence and ownership
+    SELECT organization_id, status INTO v_target_org, v_status
+    FROM dataset_versions
+    WHERE id = p_version_id;
+
+    IF v_target_org IS NULL OR v_target_org <> p_org_id THEN
+        RETURN jsonb_build_object('success', false, 'message', 'Dataset version not found for this organization.');
+    END IF;
+
+    -- 2. Verify dataset is validated
+    IF v_status NOT IN ('validated', 'published') THEN
+        RETURN jsonb_build_object('success', false, 'message', 'Cannot publish unvalidated dataset version.');
+    END IF;
+
+    -- 3. Verify all 9 files are registered
+    SELECT COUNT(*) INTO v_files_count
+    FROM dataset_files
+    WHERE dataset_version_id = p_version_id;
+
+    IF v_files_count < 9 THEN
+        RETURN jsonb_build_object('success', false, 'message', 'Dataset version has incomplete files (' || v_files_count || '/9).');
+    END IF;
+
+    -- 4. Atomic switch: activate target version FIRST, then deactivate others
+    UPDATE dataset_versions
+    SET is_active = true,
+        status = 'published',
+        published_at = now()
+    WHERE id = p_version_id;
+
+    UPDATE dataset_versions
+    SET is_active = false
+    WHERE organization_id = p_org_id AND id <> p_version_id;
+
+    -- 5. Audit record
+    INSERT INTO audit_events (
+        organization_id, user_id, event_type, entity_type, entity_id, event_metadata
+    ) VALUES (
+        p_org_id, p_user_id, 'dataset_published', 'dataset_version', p_version_id,
+        jsonb_build_object('published_at', now())
+    );
+
+    RETURN jsonb_build_object('success', true, 'message', 'Dataset version published successfully.');
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION rollback_dataset_version(
+    p_org_id UUID,
+    p_target_version_id UUID,
+    p_user_id UUID DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_status TEXT;
+    v_target_org UUID;
+BEGIN
+    SELECT organization_id, status INTO v_target_org, v_status
+    FROM dataset_versions
+    WHERE id = p_target_version_id;
+
+    IF v_target_org IS NULL OR v_target_org <> p_org_id THEN
+        RETURN jsonb_build_object('success', false, 'message', 'Target dataset version not found for this organization.');
+    END IF;
+
+    IF v_status NOT IN ('validated', 'published') THEN
+        RETURN jsonb_build_object('success', false, 'message', 'Cannot rollback to unvalidated dataset version.');
+    END IF;
+
+    -- Atomic switch
+    UPDATE dataset_versions
+    SET is_active = true,
+        status = 'published'
+    WHERE id = p_target_version_id;
+
+    UPDATE dataset_versions
+    SET is_active = false
+    WHERE organization_id = p_org_id AND id <> p_target_version_id;
+
+    INSERT INTO audit_events (
+        organization_id, user_id, event_type, entity_type, entity_id, event_metadata
+    ) VALUES (
+        p_org_id, p_user_id, 'dataset_rollback', 'dataset_version', p_target_version_id,
+        jsonb_build_object('rollback_at', now())
+    );
+
+    RETURN jsonb_build_object('success', true, 'message', 'Dataset version rolled back successfully.');
+END;
+$$;

@@ -11,8 +11,9 @@
     "test:engine": "node scripts/run-test-engine.mjs",
     "test:step3": "node scripts/run-test-step3.mjs",
     "test:integrated": "node scripts/run-test-integrated.mjs",
+    "test:supabase": "node scripts/run-test-supabase.mjs",
     "test:e2e": "playwright test",
-    "test": "npm run test:dataset && npm run test:engine && npm run test:step3 && npm run test:integrated"
+    "test": "npm run test:dataset && npm run test:engine && npm run test:step3 && npm run test:integrated && npm run test:supabase"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

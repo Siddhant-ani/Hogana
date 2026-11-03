@@ -261,7 +261,7 @@ export default function ReportsClient({ initialData }: ReportsClientProps) {
               <div className="text-left sm:text-right text-xs text-slate-500 space-y-0.5">
                 <p className="flex items-center gap-1.5 sm:justify-end">
                   <MapPin className="h-3.5 w-3.5 text-slate-400" />
-                  <span>{standardReport.corridor}</span>
+                  <span>{standardReport.serviceArea || standardReport.corridor}</span>
                 </p>
                 <p className="flex items-center gap-1.5 sm:justify-end">
                   <Calendar className="h-3.5 w-3.5 text-slate-400" />

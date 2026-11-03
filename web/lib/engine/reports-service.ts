@@ -35,7 +35,8 @@ export interface OperationalReport {
   reportId: string;
   reportType: 'eod' | 'morning' | 'evening' | 'simulation';
   title: string;
-  corridor: string;
+  serviceArea: string;
+  corridor: string; // backwards compatibility
   evaluationDate: string;
   evaluationTimestamp: string;
   disclaimer: string;
@@ -131,6 +132,7 @@ export async function getReportsData(): Promise<ReportsResponse> {
       reportId: 'REP-EOD-20250310',
       reportType: 'eod',
       title: 'End-of-Day Service Operations Audit Report',
+      serviceArea: corridor,
       corridor,
       evaluationDate: evalDate,
       evaluationTimestamp: '2025-03-10T22:00:00',
@@ -192,6 +194,7 @@ export async function getReportsData(): Promise<ReportsResponse> {
       reportId: 'REP-AM-20250310-0824',
       reportType: 'morning',
       title: 'Morning Peak Operations Replay Report (08:24:00)',
+      serviceArea: corridor,
       corridor,
       evaluationDate: evalDate,
       evaluationTimestamp: '2025-03-10T08:24:00',
@@ -250,6 +253,7 @@ export async function getReportsData(): Promise<ReportsResponse> {
       reportId: 'REP-PM-20250310-1815',
       reportType: 'evening',
       title: 'Evening Peak Operations Replay Report (18:15:00)',
+      serviceArea: corridor,
       corridor,
       evaluationDate: evalDate,
       evaluationTimestamp: '2025-03-10T18:15:00',
@@ -334,6 +338,7 @@ export async function getReportsData(): Promise<ReportsResponse> {
       reportId: 'REP-SIM-20250310',
       reportType: 'simulation',
       title: 'Operational Scenario Simulation Analysis Report',
+      serviceArea: corridor,
       corridor,
       evaluationDate: evalDate,
       evaluationTimestamp: '2025-03-10T22:00:00',

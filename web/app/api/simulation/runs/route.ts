@@ -4,10 +4,14 @@ import {
   savePersistentSimRun,
   DEFAULT_ORG_ID
 } from '@/lib/supabase/persistence-service';
+import { requireServerAuth } from '@/lib/auth/server-auth';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const runs = await getPersistentSimRuns(DEFAULT_ORG_ID);
+    const auth = await requireServerAuth(req);
+    const orgId = auth.authorized ? auth.user.organizationId : DEFAULT_ORG_ID;
+
+    const runs = await getPersistentSimRuns(orgId);
     return NextResponse.json({ success: true, data: runs });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Failed to retrieve simulation runs';
@@ -17,13 +21,19 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    // Requires authenticated user
+    const auth = await requireServerAuth(req);
+    if (!auth.authorized) {
+      return auth.response;
+    }
+
+    const { user } = auth;
     const body = await req.json();
     const {
       scenarioType,
       scenarioInputs,
       scenarioOutputs,
       summary,
-      createdBy = 'operator@hogana.transit',
       datasetVersionId
     } = body;
 
@@ -35,12 +45,12 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await savePersistentSimRun(
-      DEFAULT_ORG_ID,
+      user.organizationId,
       scenarioType,
       scenarioInputs,
       scenarioOutputs,
       summary || `${scenarioType} simulation run`,
-      createdBy,
+      user.id,
       datasetVersionId
     );
 

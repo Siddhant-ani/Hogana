@@ -441,6 +441,7 @@ export async function ingestOperationalDataset(
 
 /**
  * Publishes a validated dataset version, making it the active version.
+ * Uses atomic PostgreSQL RPC function when available to guarantee transaction safety.
  */
 export async function publishDatasetVersion(
   orgId: string,
@@ -453,14 +454,24 @@ export async function publishDatasetVersion(
   }
 
   try {
-    // 1. Deactivate current active version
-    await supabase
-      .from('dataset_versions')
-      .update({ is_active: false })
-      .eq('organization_id', orgId)
-      .eq('is_active', true);
+    // 1. Try atomic database RPC function first
+    const { data: rpcData, error: rpcErr } = await supabase.rpc('publish_dataset_version', {
+      p_org_id: orgId,
+      p_version_id: versionId,
+      p_user_id: userId.includes('@') ? null : userId
+    });
 
-    // 2. Activate requested version and set published
+    if (!rpcErr && rpcData && typeof rpcData === 'object' && 'success' in rpcData) {
+      if (!rpcData.success) {
+        return { success: false, message: rpcData.message || 'Publish RPC rejected request.' };
+      }
+      return {
+        success: true,
+        message: 'Dataset version published successfully via atomic PostgreSQL transaction.'
+      };
+    }
+
+    // 2. Fallback: activate target version FIRST before deactivating older versions (never leave without active dataset)
     const { error: activateErr } = await supabase
       .from('dataset_versions')
       .update({
@@ -475,14 +486,21 @@ export async function publishDatasetVersion(
       throw new Error(`Failed to activate dataset version: ${activateErr.message}`);
     }
 
-    // 3. Write audit event
+    // Deactivate other versions in this organization
+    await supabase
+      .from('dataset_versions')
+      .update({ is_active: false })
+      .eq('organization_id', orgId)
+      .neq('id', versionId);
+
+    // Write audit event
     await supabase.from('audit_events').insert({
       organization_id: orgId,
-      user_id: userId,
+      user_id: userId.includes('@') ? null : userId,
       event_type: 'dataset_published',
       entity_type: 'dataset_version',
       entity_id: versionId,
-      event_metadata: { publishedAt: new Date().toISOString() }
+      event_metadata: { publishedAt: new Date().toISOString(), publisher: userId }
     });
 
     return {
@@ -509,15 +527,25 @@ export async function rollbackDatasetVersion(
   }
 
   try {
-    // Deactivate current
-    await supabase
-      .from('dataset_versions')
-      .update({ is_active: false })
-      .eq('organization_id', orgId)
-      .eq('is_active', true);
+    // 1. Try atomic RPC function first
+    const { data: rpcData, error: rpcErr } = await supabase.rpc('rollback_dataset_version', {
+      p_org_id: orgId,
+      p_target_version_id: targetVersionId,
+      p_user_id: userId.includes('@') ? null : userId
+    });
 
-    // Activate target
-    const { error } = await supabase
+    if (!rpcErr && rpcData && typeof rpcData === 'object' && 'success' in rpcData) {
+      if (!rpcData.success) {
+        return { success: false, message: rpcData.message || 'Rollback RPC rejected request.' };
+      }
+      return {
+        success: true,
+        message: 'Dataset version rolled back successfully via atomic PostgreSQL transaction.'
+      };
+    }
+
+    // 2. Fallback: activate target version FIRST before deactivating older versions
+    const { error: activateErr } = await supabase
       .from('dataset_versions')
       .update({
         is_active: true,
@@ -526,18 +554,24 @@ export async function rollbackDatasetVersion(
       .eq('id', targetVersionId)
       .eq('organization_id', orgId);
 
-    if (error) {
-      throw new Error(`Rollback failed: ${error.message}`);
+    if (activateErr) {
+      throw new Error(`Rollback failed: ${activateErr.message}`);
     }
+
+    await supabase
+      .from('dataset_versions')
+      .update({ is_active: false })
+      .eq('organization_id', orgId)
+      .neq('id', targetVersionId);
 
     // Write audit event
     await supabase.from('audit_events').insert({
       organization_id: orgId,
-      user_id: userId,
+      user_id: userId.includes('@') ? null : userId,
       event_type: 'dataset_rollback',
       entity_type: 'dataset_version',
       entity_id: targetVersionId,
-      event_metadata: { rollbackAt: new Date().toISOString() }
+      event_metadata: { rollbackAt: new Date().toISOString(), rolledBackBy: userId }
     });
 
     return {

@@ -37,7 +37,8 @@ export interface InterventionProposal {
 export interface InterventionsData {
   proposals: InterventionProposal[];
   datasetDate: string;
-  corridor: string;
+  serviceArea: string;
+  corridor: string; // backwards compatibility
   generatedAt: string;
 }
 
@@ -172,6 +173,7 @@ export async function getInterventionsData(): Promise<InterventionsResponse> {
       data: {
         proposals,
         datasetDate: '10 March 2025',
+        serviceArea: 'Silk Board–Hebbal, Bengaluru (19.8 km Outer Ring Road)',
         corridor: 'Silk Board–Hebbal, Bengaluru (19.8 km Outer Ring Road)',
         generatedAt: '2025-03-10T22:00:00Z'
       }

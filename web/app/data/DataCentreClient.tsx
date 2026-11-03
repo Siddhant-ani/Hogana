@@ -104,7 +104,7 @@ function DataCentreBrowser({
       name: "Service Information",
       categoryNumber: 1,
       subtitle: "Route & Service Span",
-      description: "Route identifiers, operational corridor span, and route geometry between Silk Board and Hebbal.",
+      description: "Route identifiers, operational service area span, and route geometry between Silk Board and Hebbal.",
       recordCount: records.routes.length,
       keyFields: "route_id, route_short_name, route_long_name, route_type",
       icon: Compass,
@@ -134,7 +134,7 @@ function DataCentreBrowser({
       name: "Arrival & Departure Observations",
       categoryNumber: 4,
       subtitle: "Stop Visit & Dwell Events",
-      description: "1,032 measured arrival, departure, and dwell event observations recorded at corridor stops.",
+      description: "1,032 measured arrival, departure, and dwell event observations recorded at service area stops.",
       recordCount: records.stopTimes.length,
       keyFields: "trip_id, stop_id, arrival_time, departure_time, stop_sequence",
       icon: Clock,
@@ -144,7 +144,7 @@ function DataCentreBrowser({
       name: "Passenger Load Observations",
       categoryNumber: 5,
       subtitle: "Boardings & Vehicle Occupancy",
-      description: "641 passenger load observations capturing boardings, alightings, and onboard occupancy against bus capacity.",
+      description: `${records.passengerLoads.length} passenger load observations capturing boardings, alightings, and onboard occupancy against bus capacity.`,
       recordCount: records.passengerLoads.length,
       keyFields: "trip_id, stop_id, boardings, alightings, load_after",
       icon: Users,
@@ -154,7 +154,7 @@ function DataCentreBrowser({
       name: "Vehicle Telemetry",
       categoryNumber: 6,
       subtitle: "GPS Location & Speed",
-      description: "4,376 periodic GPS telemetry records tracking bus latitude, longitude, speed, and heading timestamps.",
+      description: `${records.busPositions.length} periodic GPS telemetry records tracking bus latitude, longitude, speed, and heading timestamps.`,
       recordCount: records.busPositions.length,
       keyFields: "timestamp, bus_id, trip_id, latitude, longitude, speed_kmh",
       icon: Gauge,
@@ -164,7 +164,7 @@ function DataCentreBrowser({
       name: "Fleet Availability",
       categoryNumber: 7,
       subtitle: "Vehicle Assets & Status",
-      description: "25 transit vehicles with registration numbers, seating capacity, and current operational allocation.",
+      description: `${records.vehicles.length} transit vehicles with registration numbers, seating capacity, and current operational allocation (9 active, 2 standby, 2 maintenance).`,
       recordCount: records.vehicles.length,
       keyFields: "bus_id, license_plate, capacity, status, vehicle_model",
       icon: Bus,
@@ -174,7 +174,7 @@ function DataCentreBrowser({
       name: "Driver & Crew Availability",
       categoryNumber: 8,
       subtitle: "Rostered Drivers & Reserves",
-      description: "28 rostered drivers assigned across morning and evening operating shifts with reserve coverage status.",
+      description: `${records.crewAvailability.length} rostered drivers assigned across morning and evening operating shifts with reserve coverage status.`,
       recordCount: records.crewAvailability.length,
       keyFields: "crew_id, driver_name, shift, status, assigned_trip",
       icon: ShieldCheck,
@@ -323,7 +323,7 @@ function DataCentreBrowser({
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                Silk Board ↔ Hebbal Corridor • Active Published Dataset Version 1 • Operational Date: {datasetDate}
+                Silk Board ↔ Hebbal Service Area • {data.datasetVersionInfo?.source === 'supabase_published' ? `Supabase Published Dataset Version ${data.datasetVersionInfo.versionNumber}` : 'Local Reference Dataset (data/demo/)'} • Operational Date: {datasetDate}
               </p>
             </div>
           </div>
@@ -353,7 +353,7 @@ function DataCentreBrowser({
           </div>
           <div className="p-3 bg-[#F5F7FA] rounded-lg border border-[#DCE5ED]">
             <span className="text-slate-500 font-medium">Fleet &amp; Crew Readiness</span>
-            <p className="text-base font-bold text-[#0F8278] mt-0.5">25 Buses / 28 Drivers</p>
+            <p className="text-base font-bold text-[#0F8278] mt-0.5">{records.vehicles.length} Buses / {records.crewAvailability.length} Drivers</p>
             <span className="text-[10px] text-slate-500">Active roster + standby reserves</span>
           </div>
         </div>
@@ -584,6 +584,16 @@ function DataCentreBrowser({
                   </div>
                 </div>
               </div>
+
+              {/* Fleet Status Reconciliation Notice */}
+              {selectedCategory === "fleet" && (
+                <div className="p-3 bg-amber-50/60 border border-amber-200 rounded-lg text-xs text-amber-900 space-y-1">
+                  <span className="font-bold block text-amber-950">Fleet Status Reconciliation Note</span>
+                  <p className="text-[11px] leading-relaxed text-amber-900/90">
+                    <code>vehicles.csv</code> registers 13 total physical vehicles: <strong>9 active</strong> in rotation, <strong>2 standby reserves</strong> (<code>BUS-12</code>, <code>BUS-13</code>), and <strong>2 in maintenance</strong> (<code>BUS-05</code>, <code>BUS-08</code> withdrawn following in-service mechanical defects). This reconciles with the operational specification’s baseline of an 11-active operating rotation before mid-day defect withdrawals. Neither source file is modified or invented.
+                  </p>
+                </div>
+              )}
 
               {/* Records Table */}
               <div className="overflow-x-auto rounded-lg border border-[#DCE5ED]">

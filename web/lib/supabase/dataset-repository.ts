@@ -1,7 +1,7 @@
 import 'server-only';
 import { loadAndValidateInternal } from '../dataset/data-access';
 import { validateDataset } from '../dataset/validator';
-import { OperationalDataset } from '../dataset/types';
+import { OperationalDataset, DemoAssumptions } from '../dataset/types';
 import { getSupabaseAdminClient, isSupabaseConfigured } from './client';
 import { query } from './pg-client';
 
@@ -58,6 +58,52 @@ export class LocalFileDatasetRepository implements IDatasetRepository {
     }
     return dataset;
   }
+}
+
+/**
+ * Helper to fetch all rows across PostgREST's default 1,000-row limit using paginated range queries.
+ */
+async function fetchAllRows<T = any>(
+  supabase: any,
+  table: string,
+  versionId: string,
+  orderBy?: string,
+  ascending = true
+): Promise<T[]> {
+  const PAGE_SIZE = 1000;
+  let allRows: T[] = [];
+  let from = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    let query = supabase
+      .from(table)
+      .select('*')
+      .eq('dataset_version_id', versionId)
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (orderBy) {
+      query = query.order(orderBy, { ascending });
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      throw new Error(`Failed to load ${table} from Supabase: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      break;
+    }
+
+    allRows = allRows.concat(data as T[]);
+    if (data.length < PAGE_SIZE) {
+      hasMore = false;
+    } else {
+      from += PAGE_SIZE;
+    }
+  }
+
+  return allRows;
 }
 
 /**
@@ -128,50 +174,104 @@ export class SupabaseDatasetRepository implements IDatasetRepository {
       throw new Error('Supabase client unavailable.');
     }
 
-    // Query all 8 operational tables and assumptions config concurrently
+    // Query all 8 operational tables with pagination (handling > 1,000 rows) and assumptions config concurrently
     const [
-      routesRes,
-      stopsRes,
-      tripsRes,
-      stopTimesRes,
-      loadsRes,
-      positionsRes,
-      vehiclesRes,
-      crewRes,
+      routesRows,
+      stopsRows,
+      tripsRows,
+      stopTimesRows,
+      loadsRows,
+      positionsRows,
+      vehiclesRows,
+      crewRows,
       versionRes
     ] = await Promise.all([
-      supabase.from('routes').select('*').eq('dataset_version_id', versionId),
-      supabase.from('stops').select('*').eq('dataset_version_id', versionId).order('stop_sequence_order', { ascending: true }),
-      supabase.from('scheduled_trips').select('*').eq('dataset_version_id', versionId),
-      supabase.from('stop_times').select('*').eq('dataset_version_id', versionId).order('stop_sequence', { ascending: true }),
-      supabase.from('passenger_loads').select('*').eq('dataset_version_id', versionId).order('stop_sequence', { ascending: true }),
-      supabase.from('bus_positions').select('*').eq('dataset_version_id', versionId).order('timestamp', { ascending: true }),
-      supabase.from('vehicles').select('*').eq('dataset_version_id', versionId),
-      supabase.from('crew_availability').select('*').eq('dataset_version_id', versionId),
-      supabase.from('dataset_versions').select('assumptions_config').eq('id', versionId).single()
+      fetchAllRows(supabase, 'routes', versionId),
+      fetchAllRows(supabase, 'stops', versionId, 'stop_sequence_order', true),
+      fetchAllRows(supabase, 'scheduled_trips', versionId),
+      fetchAllRows(supabase, 'stop_times', versionId, 'stop_sequence', true),
+      fetchAllRows(supabase, 'passenger_loads', versionId, 'stop_sequence', true),
+      fetchAllRows(supabase, 'bus_positions', versionId, 'timestamp', true),
+      fetchAllRows(supabase, 'vehicles', versionId),
+      fetchAllRows(supabase, 'crew_availability', versionId),
+      supabase.from('dataset_versions').select('assumptions_config, total_records').eq('id', versionId).single()
     ]);
 
-    if (routesRes.error) throw new Error(`Failed to load routes from Supabase: ${routesRes.error.message}`);
-    if (stopsRes.error) throw new Error(`Failed to load stops from Supabase: ${stopsRes.error.message}`);
-    if (tripsRes.error) throw new Error(`Failed to load scheduled_trips from Supabase: ${tripsRes.error.message}`);
-    if (stopTimesRes.error) throw new Error(`Failed to load stop_times from Supabase: ${stopTimesRes.error.message}`);
-    if (loadsRes.error) throw new Error(`Failed to load passenger_loads from Supabase: ${loadsRes.error.message}`);
-    if (positionsRes.error) throw new Error(`Failed to load bus_positions from Supabase: ${positionsRes.error.message}`);
-    if (vehiclesRes.error) throw new Error(`Failed to load vehicles from Supabase: ${vehiclesRes.error.message}`);
-    if (crewRes.error) throw new Error(`Failed to load crew_availability from Supabase: ${crewRes.error.message}`);
+    // Record count reconciliation
+    const totalOperationalRows =
+      routesRows.length +
+      stopsRows.length +
+      tripsRows.length +
+      stopTimesRows.length +
+      loadsRows.length +
+      positionsRows.length +
+      vehiclesRows.length +
+      crewRows.length;
 
-    const assumptions = (versionRes.data?.assumptions_config as any) || {
-      _provenance: "Approved synthetic demonstration parameters",
-      cost_per_bus_hour_inr: 850,
-      trips_per_hour: 5,
-      holding_max_delay_seconds: 300,
-      bunching_threshold_seconds: 120,
-      gap_threshold_multiplier: 1.5,
-      passenger_capacity: { seated: 40, standing: 20, total: 60 }
-    };
+    if (versionRes.data?.total_records && totalOperationalRows < 8) {
+      throw new Error(
+        `Incomplete operational dataset in Supabase. Expected records do not reconcile with retrieved rows (${totalOperationalRows}).`
+      );
+    }
+
+    const rawAssumptions = versionRes.data?.assumptions_config as any;
+    const assumptions: DemoAssumptions = rawAssumptions?.headway
+      ? (rawAssumptions as DemoAssumptions)
+      : ({
+          _provenance: rawAssumptions?._provenance || "All values are illustrative assumptions from the HeadwayIQ concept PDF. None are verified BMTC data.",
+          time_window_rules: {
+            interval_convention: "start-inclusive, end-exclusive: [T_start, T_end)",
+            departure_formula: "ceil((T_end - T_start) / frequency_minutes)"
+          },
+          headway: {
+            nominal_peak_headway_seconds: 720,
+            nominal_peak_headway_note: "Nominal scheduled service headway (720 seconds = 12 minutes) during peak periods.",
+            nominal_offpeak_headway_seconds: 900,
+            nominal_offpeak_headway_note: "Nominal scheduled service headway (900 seconds = 15 minutes) during off-peak periods.",
+            bunching_threshold_seconds: Number(rawAssumptions?.bunching_threshold_seconds ?? 120),
+            bunching_threshold_note: "Configurable default bunching threshold.",
+            large_gap_multiplier: Number(rawAssumptions?.gap_threshold_multiplier ?? 1.5),
+            large_gap_note: "A headway exceeding (nominal_scheduled_headway × this multiplier) is flagged as a large gap."
+          },
+          crowding: {
+            overcrowding_pct: 100,
+            overcrowding_note: "Percentage of vehicle capacity_total above which a warning crowding alert fires.",
+            severe_overcrowding_pct: 150,
+            severe_overcrowding_note: "Occupancy at 150% of configured capacity."
+          },
+          dispatch_control: {
+            max_delay_tolerance_seconds: Number(rawAssumptions?.holding_max_delay_seconds ?? 300),
+            max_delay_note: "Maximum cumulative delay permitted on a bus before hold recommendations are rejected or capped.",
+            min_viable_hold_seconds: 30,
+            min_viable_hold_note: "Minimum hold duration worth issuing to a driver.",
+            geofence_dwelling_radius_meters: 100,
+            telemetry_freshness_seconds: 60
+          },
+          simulator_defaults: {
+            baseline_cycle_time_minutes: 130,
+            cycle_time_note: "Illustrative round-trip cycle time assumption."
+          },
+          financial: {
+            fare_revenue_per_bus_per_day_inr: 14000,
+            fare_revenue_note: "Illustrative assumption.",
+            capacity_loss_fixed_schedule_pct: 25,
+            capacity_loss_dynamic_dispatch_pct: 8,
+            capacity_loss_note: "Illustrative assumptions.",
+            revenue_uplift_pct: 3,
+            revenue_uplift_note: "Illustrative assumption.",
+            cost_per_bus_hour_inr: rawAssumptions?.cost_per_bus_hour_inr ?? null,
+            cost_per_bus_hour_note: "Placeholder — exact value not available from the concept PDF.",
+            trips_per_hour: rawAssumptions?.trips_per_hour ?? null,
+            trips_per_hour_note: "Placeholder — exact value not available from the concept PDF."
+          },
+          pricing: {
+            price_per_bus_per_month_inr: 1200,
+            price_note: "Proposed commercial assumption, not a validated customer price."
+          }
+        } as DemoAssumptions);
 
     return {
-      routes: (routesRes.data || []).map((r: any) => ({
+      routes: routesRows.map((r: any) => ({
         route_id: r.route_id,
         route_name: r.route_name || r.route_long_name || r.route_short_name || r.route_id,
         origin_terminal: r.origin_terminal || '',
@@ -179,7 +279,7 @@ export class SupabaseDatasetRepository implements IDatasetRepository {
         total_distance_km: Number(r.total_distance_km || 0),
         source_label: r.source_label || 'synthetic'
       })),
-      stops: (stopsRes.data || []).map((s: any) => ({
+      stops: stopsRows.map((s: any) => ({
         stop_id: s.stop_id,
         stop_name: s.stop_name,
         route_id: s.route_id || '',
@@ -191,7 +291,7 @@ export class SupabaseDatasetRepository implements IDatasetRepository {
         is_control_point: Boolean(s.is_control_point),
         source_label: s.source_label || 'synthetic'
       })),
-      scheduledTrips: (tripsRes.data || []).map((t: any) => ({
+      scheduledTrips: tripsRows.map((t: any) => ({
         trip_id: t.trip_id,
         route_id: t.route_id,
         direction: t.direction,
@@ -203,7 +303,7 @@ export class SupabaseDatasetRepository implements IDatasetRepository {
         final_outcome_recorded_at: t.final_outcome_recorded_at || null,
         source_label: t.source_label || 'synthetic'
       })),
-      stopTimes: (stopTimesRes.data || []).map((st: any) => ({
+      stopTimes: stopTimesRows.map((st: any) => ({
         trip_id: st.trip_id,
         stop_id: st.stop_id,
         stop_sequence: Number(st.stop_sequence),
@@ -213,7 +313,7 @@ export class SupabaseDatasetRepository implements IDatasetRepository {
         actual_departure: st.actual_departure || null,
         source_label: st.source_label || 'synthetic'
       })),
-      passengerLoads: (loadsRes.data || []).map((l: any) => ({
+      passengerLoads: loadsRows.map((l: any) => ({
         trip_id: l.trip_id,
         stop_id: l.stop_id,
         stop_sequence: Number(l.stop_sequence),
@@ -223,7 +323,7 @@ export class SupabaseDatasetRepository implements IDatasetRepository {
         measurement_method: l.measurement_method || 'synthetic_estimate',
         source_label: l.source_label || 'synthetic'
       })),
-      busPositions: (positionsRes.data || []).map((p: any) => ({
+      busPositions: positionsRows.map((p: any) => ({
         position_id: p.position_id,
         bus_id: p.bus_id,
         trip_id: p.trip_id || '',
@@ -235,7 +335,7 @@ export class SupabaseDatasetRepository implements IDatasetRepository {
         speed_kmh: Number(p.speed_kmh),
         source_label: p.source_label || 'synthetic'
       })),
-      vehicles: (vehiclesRes.data || []).map((v: any) => ({
+      vehicles: vehiclesRows.map((v: any) => ({
         bus_id: v.bus_id,
         registration: v.registration || v.vehicle_model || '',
         capacity_seated: Number(v.capacity_seated),
@@ -245,7 +345,7 @@ export class SupabaseDatasetRepository implements IDatasetRepository {
         status: v.status,
         source_label: v.source_label || 'synthetic'
       })),
-      crewAvailability: (crewRes.data || []).map((c: any) => ({
+      crewAvailability: crewRows.map((c: any) => ({
         crew_id: c.crew_id,
         role: c.role || 'driver',
         shift_start: c.shift_start,

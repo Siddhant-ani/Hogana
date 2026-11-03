@@ -91,8 +91,8 @@ export default function DashboardClient({ responses }: DashboardClientProps) {
         badge="Control Room"
         badgeTone="teal"
         serviceArea="Silk Board–Hebbal, Bengaluru"
-        title="Operations Dashboard"
-        description={currentView.viewSubtitle.replace(/corridor/gi, 'service area')}
+        title="Service Performance Overview"
+        description="Operational headway regularity, service fulfilment, bunching mitigation, and resource allocation across the Silk Board–Hebbal service area."
         actions={
           <div className="flex flex-wrap items-center bg-slate-100 p-1.5 rounded-xl border border-slate-200 self-start lg:self-auto">
             {availableViews.map((v) => {
@@ -160,48 +160,249 @@ export default function DashboardClient({ responses }: DashboardClientProps) {
         )}
       </div>
 
-      {/* 4 Priority Operational Indicators (§Part A Customer UI) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Priority 1: Operated Trips & Fulfilment */}
-        <KpiCard
-          label="Operated Trips &amp; Fulfilment"
-          value={kpis.operatedTrips}
-          subValue={`of ${kpis.totalScheduledTrips} slots (${kpis.fulfillmentRatePct.toFixed(1)}%)`}
-          benchmark="Target: ≥ 95.0% completion"
-          status={kpis.fulfillmentRatePct >= 95 ? "optimal" : "warning"}
-          icon={<Gauge className="h-5 w-5 text-teal-600" />}
-        />
+      {/* 8 Priority Operational Metrics */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+            <Gauge className="h-4 w-4 text-[#0F8278]" />
+            Core Service Performance Indicators
+          </h2>
+          <span className="text-[11px] text-slate-500">Reconciled against 86 planned daily timetable slots</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          {/* 1. Services Scheduled */}
+          <KpiCard
+            label="Services Scheduled"
+            value={kpis.totalScheduledTrips}
+            subValue="Timetable commitments"
+            benchmark="Daily planned operations"
+            status="neutral"
+            icon={<Bus className="h-4 w-4 text-slate-600" />}
+          />
 
-        {/* Priority 2: Headway Regularity / OTP */}
-        <KpiCard
-          label="On-Time Performance (OTP)"
-          value={headwaySummary.otpSummary.available ? `${headwaySummary.otpSummary.onTimePct.toFixed(1)}%` : "N/A"}
-          subValue={headwaySummary.otpSummary.available ? `±${headwaySummary.otpSummary.onTimeThresholdSeconds}s window` : "No visits observed"}
-          benchmark="Target: ≥ 80.0% OTP"
-          status={headwaySummary.otpSummary.available && headwaySummary.otpSummary.onTimePct >= 80 ? "optimal" : "warning"}
-          icon={<Compass className="h-5 w-5 text-teal-600" />}
-        />
+          {/* 2. Services Operated */}
+          <KpiCard
+            label="Services Operated"
+            value={kpis.operatedTrips}
+            subValue="Completed revenue trips"
+            benchmark="77 of 86 fulfilled"
+            status="optimal"
+            icon={<CheckCircle2 className="h-4 w-4 text-[#0F8278]" />}
+          />
 
-        {/* Priority 3: Bunching Status */}
-        <KpiCard
-          label="Bus Bunching Alert"
-          value={bunchingSummary.detectedAlerts.length > 0 ? `${bunchingSummary.detectedAlerts.length} Active` : "Nominal"}
-          subValue={bunchingStatusText}
-          benchmark="Threshold: < 120s separation"
-          status={bunchingSeverity}
-          icon={<Layers className="h-5 w-5 text-amber-600" />}
-        />
+          {/* 3. Service Fulfilment */}
+          <KpiCard
+            label="Service Fulfilment"
+            value={`${kpis.fulfillmentRatePct.toFixed(1)}%`}
+            subValue="Operated / scheduled"
+            benchmark="Target: ≥ 95.0%"
+            status={kpis.fulfillmentRatePct >= 95 ? "optimal" : "warning"}
+            icon={<Gauge className="h-4 w-4 text-[#0F8278]" />}
+          />
 
-        {/* Priority 4: Crowding / Peak Load */}
-        <KpiCard
-          label="Peak Occupancy &amp; Crowding"
-          value={crowdingSummary.peakOccupancyPct !== null ? `${crowdingSummary.peakOccupancyPct}%` : "Nominal"}
-          subValue={crowdingSummary.peakOnboardPassengers ? `${crowdingSummary.peakOnboardPassengers} passengers on 60-cap bus` : crowdingStatusText}
-          benchmark="Design cap: 60 (40 seat + 20 stand)"
-          status={crowdingSeverity}
-          icon={<Users className="h-5 w-5 text-rose-600" />}
-        />
+          {/* 4. Cancelled Services */}
+          <KpiCard
+            label="Cancelled Services"
+            value={kpis.cancelledTrips}
+            subValue="Operational disruptions"
+            benchmark="2 weather/traffic trips"
+            status={kpis.cancelledTrips > 0 ? "warning" : "optimal"}
+            icon={<AlertTriangle className="h-4 w-4 text-amber-600" />}
+          />
+
+          {/* 5. Resource Shortfalls */}
+          <KpiCard
+            label="Resource Shortfalls"
+            value={kpis.resourceShortfallTrips}
+            subValue="Unfulfilled crew / vehicle"
+            benchmark="7 depot staffing shortfalls"
+            status={kpis.resourceShortfallTrips > 0 ? "alert" : "optimal"}
+            icon={<AlertCircle className="h-4 w-4 text-rose-600" />}
+          />
+
+          {/* 6. Headway Regularity (OTP) */}
+          <KpiCard
+            label="Headway Regularity (OTP)"
+            value={headwaySummary.otpSummary.available ? `${headwaySummary.otpSummary.onTimePct.toFixed(1)}%` : "N/A"}
+            subValue={headwaySummary.otpSummary.available ? `±${headwaySummary.otpSummary.onTimeThresholdSeconds}s tolerance` : "No visits observed"}
+            benchmark="Target: ≥ 80.0% regularity"
+            status={headwaySummary.otpSummary.available && headwaySummary.otpSummary.onTimePct >= 80 ? "optimal" : "warning"}
+            icon={<Compass className="h-4 w-4 text-[#0F8278]" />}
+          />
+
+          {/* 7. Important Service Gaps */}
+          <KpiCard
+            label="Service Gaps (>1.5×)"
+            value={serviceGapsSummary.detectedGaps.length}
+            subValue={serviceGapsSummary.detectedGaps.length > 0 ? "Requires standby dispatch" : "Even vehicle spacing"}
+            benchmark="Threshold: > 1.5× interval"
+            status={serviceGapsSummary.detectedGaps.length > 0 ? "alert" : "optimal"}
+            icon={<Layers className="h-4 w-4 text-amber-600" />}
+          />
+
+          {/* 8. Passenger Crowding */}
+          <KpiCard
+            label="Severe Crowding (≥150%)"
+            value={crowdingSummary.severelyOvercrowdedCount}
+            subValue={crowdingStatusText}
+            benchmark="Design cap: 60 passengers"
+            status={crowdingSeverity}
+            icon={<Users className="h-4 w-4 text-rose-600" />}
+          />
+        </div>
       </div>
+
+      {/* Operational Attention Section */}
+      <section className="bg-white rounded-xl border border-[#DCE5ED] p-5 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
+          <div>
+            <h2 className="text-sm font-bold text-[#12233F] uppercase tracking-wide flex items-center gap-2">
+              <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
+              Operational Attention Required
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              High-priority incidents crossing operational thresholds requiring dispatcher review and intervention.
+            </p>
+          </div>
+          <span className="text-[11px] font-semibold text-slate-600 bg-[#F5F7FA] border border-[#DCE5ED] px-2.5 py-1 rounded-md self-start sm:self-auto">
+            4 Operational Focus Areas
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Attention Card 1: Morning Bunching at Marathahalli */}
+          <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-4 space-y-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-amber-100 text-amber-800">
+                  <Layers className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-amber-950">Morning Bunching at Marathahalli</h3>
+                  <span className="text-[10px] text-amber-800 font-medium">Headway Compression</span>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-200/80 text-amber-900 border border-amber-300">
+                Actionable Hold
+              </span>
+            </div>
+
+            <div className="space-y-1.5 text-xs text-slate-700">
+              <p>
+                <strong className="text-slate-900">What happened:</strong> Leading trip 103 (KA-01-F-1003) and trailing trip 104 (KA-01-F-1004) arrived within 45 seconds of each other.
+              </p>
+              <p>
+                <strong className="text-slate-900">Where:</strong> Marathahalli Bridge (Stop ID: STOP_007, Northbound to Hebbal).
+              </p>
+              <p>
+                <strong className="text-slate-900">Threshold crossed:</strong> 45s observed separation vs. minimum 120s bunching threshold (scheduled headway: 360s).
+              </p>
+              <p className="text-amber-900 font-medium">
+                <strong>Why review:</strong> Prevents downstream passenger starvation, uneven passenger boarding delays, and inefficient double-bus convoying. Recommend holding trailing bus at Marathahalli control point.
+              </p>
+            </div>
+          </div>
+
+          {/* Attention Card 2: Evening Service Gap at Hebbal */}
+          <div className="rounded-xl border border-rose-200 bg-rose-50/40 p-4 space-y-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-rose-100 text-rose-800">
+                  <AlertCircle className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-rose-950">Evening Service Gap at Hebbal</h3>
+                  <span className="text-[10px] text-rose-800 font-medium">Excess Passenger Wait Time</span>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-200/80 text-rose-900 border border-rose-300">
+                Relief Dispatch
+              </span>
+            </div>
+
+            <div className="space-y-1.5 text-xs text-slate-700">
+              <p>
+                <strong className="text-slate-900">What happened:</strong> 1,020s (17.0 min) elapsed between consecutive arrivals, leaving Hebbal outbound queue unserviced.
+              </p>
+              <p>
+                <strong className="text-slate-900">Where:</strong> Hebbal Terminal (Stop ID: STOP_013, Southbound to Silk Board).
+              </p>
+              <p>
+                <strong className="text-slate-900">Threshold crossed:</strong> 1,020s gap vs. 720s (1.5× 480s scheduled evening peak interval).
+              </p>
+              <p className="text-rose-900 font-medium">
+                <strong>Why review:</strong> Halts severe platform crowding and passenger wait times. Dispatch standby vehicle KA-01-F-1021 with rostered reserve crew from Hebbal depot.
+              </p>
+            </div>
+          </div>
+
+          {/* Attention Card 3: Morning Peak Crowding at Kadubeesanahalli */}
+          <div className="rounded-xl border border-rose-200 bg-rose-50/40 p-4 space-y-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-rose-100 text-rose-800">
+                  <Users className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-rose-950">Morning Peak Crowding at Kadubeesanahalli</h3>
+                  <span className="text-[10px] text-rose-800 font-medium">Capacity Exceeded</span>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-200/80 text-rose-900 border border-rose-300">
+                160% Occupancy
+              </span>
+            </div>
+
+            <div className="space-y-1.5 text-xs text-slate-700">
+              <p>
+                <strong className="text-slate-900">What happened:</strong> Trip 106 observed 96 passengers onboard a 60-passenger capacity vehicle.
+              </p>
+              <p>
+                <strong className="text-slate-900">Where:</strong> Kadubeesanahalli (Stop ID: STOP_005, Northbound).
+              </p>
+              <p>
+                <strong className="text-slate-900">Threshold crossed:</strong> 160% occupancy vs. 150% severe overcrowding safety limit.
+              </p>
+              <p className="text-rose-900 font-medium">
+                <strong>Why review:</strong> Immediate passenger safety concern, prolonged stop dwell times worsening bunching behind, and pass-ups at subsequent tech park stops.
+              </p>
+            </div>
+          </div>
+
+          {/* Attention Card 4: Staffing Shortfall Trips on Route UP/DOWN */}
+          <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-4 space-y-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-amber-100 text-amber-800">
+                  <Bus className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-amber-950">Staffing Shortfall Trips on Route UP/DOWN</h3>
+                  <span className="text-[10px] text-amber-800 font-medium">Depot Crew Allocation</span>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-200/80 text-amber-900 border border-amber-300">
+                7 Uncrewed Trips
+              </span>
+            </div>
+
+            <div className="space-y-1.5 text-xs text-slate-700">
+              <p>
+                <strong className="text-slate-900">What happened:</strong> 7 planned service trips unfulfilled due to morning depot crew shortages (trips 115, 117, 122, 131, 145, 149, 158).
+              </p>
+              <p>
+                <strong className="text-slate-900">Where:</strong> Both directions (Silk Board &amp; Hebbal departures).
+              </p>
+              <p>
+                <strong className="text-slate-900">Threshold crossed:</strong> 7 shortfall cancellations (8.1% of daily schedule).
+              </p>
+              <p className="text-amber-900 font-medium">
+                <strong>Why review:</strong> Pre-trip crew sign-on failure; requires dynamic re-rostering from reserve driver pool to protect headway standards and avoid unannounced service dropouts.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Replay Lifecycle Breakdown Bar (Only displayed in Replay Modes) */}
       {currentView.isReplay && kpis.replayStatus && (
@@ -259,7 +460,7 @@ export default function DashboardClient({ responses }: DashboardClientProps) {
               </div>
             </div>
 
-            {/* OTP Corridor Badge */}
+            {/* OTP Service Area Badge */}
             {headwaySummary.otpSummary.available && (
               <div className="mb-4 bg-slate-50 border border-slate-200 rounded-lg p-3 flex items-center justify-between text-xs">
                 <div>

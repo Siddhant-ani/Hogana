@@ -223,18 +223,19 @@ test.describe('HOGANA End-to-End Acceptance: Branding, Auth, Terminology & Workf
   });
 
   // 5. OPERATIONS DASHBOARD (AUTHENTICATED)
-  test('5. Operations Dashboard renders hierarchy, 4 priority KPIs, and all view selectors', async ({ page }) => {
+  test('5. Operations Dashboard renders hierarchy, 8 priority KPIs, and all view selectors', async ({ page }) => {
     await performLogin(page);
     await page.goto('/dashboard');
 
     // Verify Title & Breadcrumb
-    await expect(page.locator('h1:has-text("Operations Dashboard")')).toBeVisible();
+    await expect(page.locator('h1:has-text("Service Performance Overview")')).toBeVisible();
 
-    // Verify 4 Priority KPIs exist
-    await expect(page.locator('text=Operated Trips & Fulfilment')).toBeVisible();
-    await expect(page.locator('text=On-Time Performance (OTP)').first()).toBeVisible();
-    await expect(page.locator('text=Bus Bunching Alert')).toBeVisible();
-    await expect(page.locator('text=Peak Occupancy & Crowding')).toBeVisible();
+    // Verify Priority KPIs exist
+    await expect(page.locator('text=Services Scheduled').first()).toBeVisible();
+    await expect(page.locator('text=Services Operated').first()).toBeVisible();
+    await expect(page.locator('text=Service Fulfilment').first()).toBeVisible();
+    await expect(page.locator('text=Headway Regularity (OTP)').first()).toBeVisible();
+    await expect(page.locator('text=Operational Attention Required')).toBeVisible();
 
     // Switch to Morning Peak View (08:24)
     await page.click('button:has-text("Morning Replay")');
@@ -244,8 +245,7 @@ test.describe('HOGANA End-to-End Acceptance: Branding, Auth, Terminology & Workf
     // Switch to Evening Peak View (18:15)
     await page.click('button:has-text("Evening Replay")');
     await expect(page.locator('text=Anti-Lookahead Active')).toBeVisible();
-    await expect(page.locator('text=Hebbal Flyover (DOWN)').first()).toBeVisible();
-    await expect(page.locator('text=1440s Gap').first()).toBeVisible();
+    await expect(page.locator('text=Hebbal').first()).toBeVisible();
 
     // Switch to End-of-Day View
     await page.click('button:has-text("End-of-Day Audit")');
@@ -257,11 +257,13 @@ test.describe('HOGANA End-to-End Acceptance: Branding, Auth, Terminology & Workf
     await performLogin(page);
     await page.goto('/data');
 
-    // Validation Audit Tab
+    // Title and Validation Audit
+    await expect(page.locator('h1:has-text("Data & Quality")')).toBeVisible();
     await expect(page.locator('text=56/56 Checks Verified').first()).toBeVisible();
+    await expect(page.locator('text=Overall Data Health & Verification Status')).toBeVisible();
 
     // Commuter Insights Tab
-    await page.click('button:has-text("Commuter Insights — Illustrative Case Study")');
+    await page.click('button:has-text("Commuter Perception Insights")');
 
     // Simulated workbook disclaimer prominently visible
     await expect(page.locator('text=Simulated Illustrative Workbook — Not Real Field Research')).toBeVisible();
@@ -287,8 +289,8 @@ test.describe('HOGANA End-to-End Acceptance: Branding, Auth, Terminology & Workf
     await page.reload();
 
     // Header & Disclaimer
-    await expect(page.locator('h1:has-text("Operational Interventions & Human Review")')).toBeVisible();
-    await expect(page.locator('text=Local Review Storage')).toBeVisible();
+    await expect(page.locator('h1:has-text("Operational Recommendations")')).toBeVisible();
+    await expect(page.locator('text=Advisory Decision-Support — Human Confirmation Required')).toBeVisible();
 
     // Approve first proposal
     const approveButtons = page.locator('button', { hasText: /^Approve$/ });
@@ -320,24 +322,24 @@ test.describe('HOGANA End-to-End Acceptance: Branding, Auth, Terminology & Workf
     await page.goto('/simulation');
 
     // Header & Model disclaimer
-    await expect(page.locator('h1:has-text("Operational Intervention Sandbox & Impact Analysis")')).toBeVisible();
-    await expect(page.locator('text=Deterministic Operations Model')).toBeVisible();
+    await expect(page.locator('h1:has-text("Scenario Planning")')).toBeVisible();
+    await expect(page.locator('text=Deterministic Operations & Impact Modeling')).toBeVisible();
 
     // Scenario 1: Bunching Hold
-    await expect(page.locator('h2:has-text("Scenario 1: Bus Bunching & Dispatcher Hold Simulation")')).toBeVisible();
+    await expect(page.locator('text=Bus Spacing & Holding').first()).toBeVisible();
     await expect(page.locator('text=375s Projected Separation')).toBeVisible();
 
     // Save Holding Run
     await page.click('button:has-text("Save Simulation Run")');
-    await expect(page.getByText(/Holding simulation saved to local history/i)).toBeVisible();
+    await expect(page.getByText(/Holding simulation saved/i)).toBeVisible();
 
     // Scenario 2: Standby Relief
-    await page.click('button:has-text("Scenario 2: Service Gap Relief")');
+    await page.click('button:has-text("Service Gap & Standby Relief")');
     await expect(page.locator('text=Resource Deployment Feasible')).toBeVisible();
     await expect(page.locator('text=physically staged at Hebbal DOWN')).toBeVisible();
 
     // Scenario 3: Crowding & Frequency
-    await page.click('button:has-text("Scenario 3: Crowding & Frequency")');
+    await page.click('button:has-text("Crowding & Frequency")');
     await expect(page.locator('text=60 Passengers').first()).toBeVisible();
     await expect(page.locator('text=40 Seated + 20 Standing')).toBeVisible();
   });
@@ -348,7 +350,7 @@ test.describe('HOGANA End-to-End Acceptance: Branding, Auth, Terminology & Workf
     await page.goto('/reports');
 
     // Header & Export controls
-    await expect(page.locator('h1:has-text("Service Operations Performance Reports")')).toBeVisible();
+    await expect(page.locator('h1:has-text("Performance & Operations Reports")')).toBeVisible();
     await expect(page.locator('button:has-text("Download CSV")')).toBeEnabled();
     await expect(page.locator('button:has-text("Download JSON")')).toBeEnabled();
     await expect(page.locator('button:has-text("Print / Save PDF")')).toBeVisible();

@@ -173,86 +173,86 @@ export class SupabaseDatasetRepository implements IDatasetRepository {
     return {
       routes: (routesRes.data || []).map((r: any) => ({
         route_id: r.route_id,
-        route_name: r.route_long_name || r.route_short_name || r.route_id,
-        origin_terminal: "Silk Board Junction",
-        destination_terminal: "Hebbal Flyover",
-        total_distance_km: 18.5,
-        source_label: r.source_label || "synthetic"
+        route_name: r.route_name || r.route_long_name || r.route_short_name || r.route_id,
+        origin_terminal: r.origin_terminal || '',
+        destination_terminal: r.destination_terminal || '',
+        total_distance_km: Number(r.total_distance_km || 0),
+        source_label: r.source_label || 'synthetic'
       })),
       stops: (stopsRes.data || []).map((s: any) => ({
         stop_id: s.stop_id,
         stop_name: s.stop_name,
-        route_id: "silk-board-hebbal",
+        route_id: s.route_id || '',
         direction: s.direction,
         sequence: Number(s.stop_sequence_order || 1),
         lat: Number(s.stop_lat),
         lon: Number(s.stop_lon),
-        dist_from_origin_km: 0.0,
+        dist_from_origin_km: Number(s.dist_from_origin_km || 0),
         is_control_point: Boolean(s.is_control_point),
-        source_label: s.source_label || "synthetic"
+        source_label: s.source_label || 'synthetic'
       })),
       scheduledTrips: (tripsRes.data || []).map((t: any) => ({
         trip_id: t.trip_id,
         route_id: t.route_id,
         direction: t.direction,
-        bus_id: t.vehicle_id || null,
+        bus_id: t.bus_id || t.vehicle_id || null,
         scheduled_departure: t.scheduled_departure_time,
         scheduled_arrival: t.scheduled_arrival_time,
-        final_outcome: (t.operational_status === "operated" || t.operational_status === "cancelled" ? t.operational_status : "resource_shortfall"),
-        final_outcome_reason: null,
-        final_outcome_recorded_at: null,
-        source_label: t.source_label || "synthetic"
+        final_outcome: (t.final_outcome || t.operational_status || 'operated'),
+        final_outcome_reason: t.final_outcome_reason || null,
+        final_outcome_recorded_at: t.final_outcome_recorded_at || null,
+        source_label: t.source_label || 'synthetic'
       })),
       stopTimes: (stopTimesRes.data || []).map((st: any) => ({
         trip_id: st.trip_id,
         stop_id: st.stop_id,
         stop_sequence: Number(st.stop_sequence),
-        scheduled_arrival: st.scheduled_arrival || "",
-        scheduled_departure: st.scheduled_departure || "",
+        scheduled_arrival: st.scheduled_arrival || '',
+        scheduled_departure: st.scheduled_departure || '',
         actual_arrival: st.actual_arrival || null,
         actual_departure: st.actual_departure || null,
-        source_label: st.source_label || "synthetic"
+        source_label: st.source_label || 'synthetic'
       })),
       passengerLoads: (loadsRes.data || []).map((l: any) => ({
         trip_id: l.trip_id,
         stop_id: l.stop_id,
         stop_sequence: Number(l.stop_sequence),
-        boardings: Number(l.boarding_passengers ?? 0),
-        alightings: Number(l.alighting_passengers ?? 0),
-        onboard_after: Number(l.load_departing ?? 0),
-        measurement_method: "synthetic_estimate",
-        source_label: l.source_label || "synthetic"
+        boardings: l.boardings !== null && l.boardings !== undefined ? Number(l.boardings) : null,
+        alightings: l.alightings !== null && l.alightings !== undefined ? Number(l.alightings) : null,
+        onboard_after: l.onboard_after !== null && l.onboard_after !== undefined ? Number(l.onboard_after) : (l.load_departing !== null ? Number(l.load_departing) : null),
+        measurement_method: l.measurement_method || 'synthetic_estimate',
+        source_label: l.source_label || 'synthetic'
       })),
       busPositions: (positionsRes.data || []).map((p: any) => ({
         position_id: p.position_id,
         bus_id: p.bus_id,
-        trip_id: p.trip_id || "",
-        route_id: "silk-board-hebbal",
-        direction: "UP",
+        trip_id: p.trip_id || '',
+        route_id: p.route_id || '',
+        direction: p.direction || 'UP',
         timestamp: p.timestamp,
         latitude: Number(p.latitude),
         longitude: Number(p.longitude),
         speed_kmh: Number(p.speed_kmh),
-        source_label: p.source_label || "synthetic"
+        source_label: p.source_label || 'synthetic'
       })),
       vehicles: (vehiclesRes.data || []).map((v: any) => ({
         bus_id: v.bus_id,
-        registration: v.vehicle_model || "KA-01-F-1001",
+        registration: v.registration || v.vehicle_model || '',
         capacity_seated: Number(v.capacity_seated),
         capacity_standing: Number(v.capacity_standing),
         capacity_total: Number(v.capacity_total),
-        current_location_stop_id: "silk-board-up",
-        status: (v.status === "active" || v.status === "standby" || v.status === "maintenance" ? v.status : "active"),
-        source_label: v.source_label || "synthetic"
+        current_location_stop_id: v.current_location_stop_id || '',
+        status: v.status,
+        source_label: v.source_label || 'synthetic'
       })),
       crewAvailability: (crewRes.data || []).map((c: any) => ({
         crew_id: c.crew_id,
-        role: "driver" as const,
+        role: c.role || 'driver',
         shift_start: c.shift_start,
         shift_end: c.shift_end,
         assigned_bus_id: c.assigned_bus_id || null,
-        status: (c.status === "on_duty" || c.status === "standby" ? c.status : "on_duty"),
-        source_label: c.source_label || "synthetic"
+        status: c.status,
+        source_label: c.source_label || 'synthetic'
       })),
       assumptions
     };
@@ -267,8 +267,10 @@ export function getDatasetRepository(): IDatasetRepository {
   
   if (configuredSource === 'supabase') {
     if (!isSupabaseConfigured()) {
-      console.warn('DATASET_SOURCE is set to "supabase" but credentials are not configured. Using local synthetic repository fallback.');
-      return new LocalFileDatasetRepository();
+      throw new Error(
+        'DATASET_SOURCE is set to "supabase" but required credentials (SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, and SUPABASE_SECRET_KEY / SUPABASE_SERVICE_ROLE_KEY) are not configured. ' +
+        'Cannot silently replace production data with local synthetic files.'
+      );
     }
     return new SupabaseDatasetRepository();
   }

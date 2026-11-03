@@ -17,7 +17,7 @@ export interface AuthUser {
   id: string;
   email: string;
   name: string;
-  role: 'operations_controller' | 'transit_planner' | 'auditor';
+  role: 'administrator' | 'data_manager' | 'dispatcher' | 'analyst' | 'operations_controller';
 }
 
 export interface SessionPayload {
@@ -35,14 +35,21 @@ export const SESSION_DURATION_SECONDS = 7 * 24 * 60 * 60; // 7 days
 // Default secure configuration fallback for local development/testing if env is unset
 const DEFAULT_AUTH_SECRET = process.env.AUTH_SECRET || 'hogana_production_auth_secret_minimum_32_chars_key_2025';
 const DEFAULT_USER_EMAIL = (process.env.AUTH_USER_EMAIL || 'operator@hogana.transit').toLowerCase().trim();
-const DEFAULT_USER_NAME = process.env.AUTH_USER_NAME || 'Operations Controller';
-const DEFAULT_USER_ROLE: AuthUser['role'] = (process.env.AUTH_USER_ROLE as AuthUser['role']) || 'operations_controller';
+const DEFAULT_USER_NAME = process.env.AUTH_USER_NAME || 'Operations Dispatcher';
+const DEFAULT_USER_ROLE: AuthUser['role'] = (process.env.AUTH_USER_ROLE as AuthUser['role']) || 'dispatcher';
 
 // Pre-computed scrypt hash for 'HoganaOps@2025!' (never stored in plaintext)
 const DEFAULT_SALT = process.env.AUTH_USER_SALT || '3508c99d32951e4c750b10fad454553e';
 const DEFAULT_HASH = process.env.AUTH_USER_PASSWORD_HASH || '6161bf7444c6915e9affeeeb6a5e04e81d6dbb72d0dca48efbf0793531da7c63da6662da2acb5e1ff1601f36c948a474096665c30cfe82e1440fd07f3d8bf8a9';
 // Also accept 'Hogana0ps@2025!' (with number zero) to prevent login failure from visual letter-O vs number-0 confusion
 const DEFAULT_HASH_ZERO_VARIANT = 'f9e52fdf25ce3a97b766afd93e04211bb51d649a35b2512f25b584bff882332bd3ab1f0aff895ada04ec966c6075d1524933f98cc8fee24abd51b9303af766dc';
+
+const PILOT_ROLE_USERS: Record<string, { id: string; name: string; role: AuthUser['role'] }> = {
+  'operator@hogana.transit': { id: 'usr_disp_01', name: 'Operations Dispatcher', role: 'dispatcher' },
+  'manager@hogana.transit': { id: 'usr_mgr_01', name: 'Data Operations Manager', role: 'data_manager' },
+  'admin@hogana.transit': { id: 'usr_adm_01', name: 'System Administrator', role: 'administrator' },
+  'analyst@hogana.transit': { id: 'usr_anl_01', name: 'Transit Operations Analyst', role: 'analyst' }
+};
 
 function base64UrlEncode(str: string): string {
   return Buffer.from(str, 'utf8')
@@ -88,6 +95,22 @@ export function verifyPassword(password: string, salt: string, storedHash: strin
 export async function authenticateCredentials(email: string, password: string): Promise<AuthUser | null> {
   const normalizedEmail = email.toLowerCase().trim();
 
+  // 1. Check configured pilot accounts with hashed scrypt passwords
+  const pilotUser = PILOT_ROLE_USERS[normalizedEmail];
+  if (pilotUser) {
+    if (
+      verifyPassword(password, DEFAULT_SALT, DEFAULT_HASH) ||
+      verifyPassword(password, DEFAULT_SALT, DEFAULT_HASH_ZERO_VARIANT)
+    ) {
+      return {
+        id: pilotUser.id,
+        email: normalizedEmail,
+        name: pilotUser.name,
+        role: pilotUser.role
+      };
+    }
+  }
+
   // Support multiple configured users via HOGANA_AUTH_USERS environment variable if present
   if (process.env.HOGANA_AUTH_USERS) {
     try {
@@ -106,8 +129,8 @@ export async function authenticateCredentials(email: string, password: string): 
     }
   }
 
-  // Fallback to primary configured user
-  if (normalizedEmail === DEFAULT_USER_EMAIL) {
+  // Fallback to primary configured user if different from pilot accounts
+  if (normalizedEmail === DEFAULT_USER_EMAIL && !pilotUser) {
     if (
       verifyPassword(password, DEFAULT_SALT, DEFAULT_HASH) ||
       verifyPassword(password, DEFAULT_SALT, DEFAULT_HASH_ZERO_VARIANT)

@@ -2,7 +2,17 @@ import 'server-only';
 import crypto from 'crypto';
 import { parseDatasetFromBuffers } from '../dataset/parser';
 import { validateDataset } from '../dataset/validator';
-import { OperationalDataset, Route, Stop, Vehicle, CrewAvailability } from '../dataset/types';
+import {
+  OperationalDataset,
+  Route,
+  Stop,
+  ScheduledTrip,
+  StopTime,
+  PassengerLoad,
+  BusPosition,
+  Vehicle,
+  CrewAvailability
+} from '../dataset/types';
 import { getSupabaseAdminClient, isSupabaseConfigured } from './client';
 import { uploadFileToBucket, BUCKETS } from './storage-service';
 import { DatasetVersion, DatasetFile } from './types';
@@ -184,7 +194,7 @@ export async function ingestOperationalDataset(
         else if (lower === 'crew_availability.csv') rowCount = parsedDataset.crewAvailability.length;
         else if (lower.endsWith('.json')) rowCount = 1;
 
-        await supabase.from('dataset_files').insert({
+        const { error: fileErr } = await supabase.from('dataset_files').insert({
           dataset_version_id: versionId,
           original_filename: file.filename,
           storage_path: storagePath,
@@ -196,33 +206,57 @@ export async function ingestOperationalDataset(
           row_count: rowCount,
           validation_result: { valid: true }
         });
+
+        if (fileErr) {
+          throw new Error(`Failed to record dataset file '${file.filename}' in database: ${fileErr.message}`);
+        }
       }
 
-      // Stage operational records
-      // Routes
-      await supabase.from('routes').insert(
+      // Helper function to insert in chunks and verify errors
+      async function chunkInsert(table: string, records: Record<string, unknown>[], chunkSize = 400) {
+        if (!records || records.length === 0) return;
+        for (let i = 0; i < records.length; i += chunkSize) {
+          const chunk = records.slice(i, i + chunkSize);
+          const { error } = await supabase!.from(table).insert(chunk as any);
+          if (error) {
+            throw new Error(`Database insert failure on table '${table}' (batch ${Math.floor(i / chunkSize) + 1}): ${error.message}`);
+          }
+        }
+      }
+
+      // Stage all 8 operational record tables (preserving source data, zero invented defaults)
+      // 1. Routes
+      await chunkInsert(
+        'routes',
         parsedDataset.routes.map((r: Route) => ({
           organization_id: orgId,
           dataset_version_id: versionId,
           route_id: r.route_id,
+          route_name: r.route_name,
+          origin_terminal: r.origin_terminal,
+          destination_terminal: r.destination_terminal,
+          total_distance_km: r.total_distance_km,
           route_short_name: r.route_id,
           route_long_name: r.route_name,
           route_type: 3,
-          agency_id: 'BMTC',
+          agency_id: null,
           source_label: r.source_label
         }))
       );
 
-      // Stops
-      await supabase.from('stops').insert(
+      // 2. Stops
+      await chunkInsert(
+        'stops',
         parsedDataset.stops.map((s: Stop) => ({
           organization_id: orgId,
           dataset_version_id: versionId,
           stop_id: s.stop_id,
           stop_name: s.stop_name,
+          route_id: s.route_id,
           stop_lat: s.lat,
           stop_lon: s.lon,
           stop_sequence_order: s.sequence,
+          dist_from_origin_km: s.dist_from_origin_km,
           direction: s.direction,
           is_control_point: s.is_control_point,
           is_terminal: false,
@@ -230,34 +264,114 @@ export async function ingestOperationalDataset(
         }))
       );
 
-      // Vehicles & Crew
-      await supabase.from('vehicles').insert(
+      // 3. Scheduled Trips
+      await chunkInsert(
+        'scheduled_trips',
+        parsedDataset.scheduledTrips.map((t: ScheduledTrip) => ({
+          organization_id: orgId,
+          dataset_version_id: versionId,
+          trip_id: t.trip_id,
+          route_id: t.route_id,
+          direction: t.direction,
+          bus_id: t.bus_id,
+          vehicle_id: t.bus_id,
+          scheduled_departure_time: t.scheduled_departure,
+          scheduled_arrival_time: t.scheduled_arrival,
+          operational_status: t.final_outcome,
+          final_outcome: t.final_outcome,
+          final_outcome_reason: t.final_outcome_reason,
+          final_outcome_recorded_at: t.final_outcome_recorded_at,
+          source_label: t.source_label
+        }))
+      );
+
+      // 4. Stop Times
+      await chunkInsert(
+        'stop_times',
+        parsedDataset.stopTimes.map((st: StopTime) => ({
+          organization_id: orgId,
+          dataset_version_id: versionId,
+          trip_id: st.trip_id,
+          stop_id: st.stop_id,
+          stop_sequence: st.stop_sequence,
+          scheduled_arrival: st.scheduled_arrival,
+          scheduled_departure: st.scheduled_departure,
+          actual_arrival: st.actual_arrival,
+          actual_departure: st.actual_departure,
+          source_label: st.source_label
+        }))
+      );
+
+      // 5. Passenger Loads
+      await chunkInsert(
+        'passenger_loads',
+        parsedDataset.passengerLoads.map((l: PassengerLoad) => ({
+          organization_id: orgId,
+          dataset_version_id: versionId,
+          trip_id: l.trip_id,
+          stop_id: l.stop_id,
+          stop_sequence: l.stop_sequence,
+          boardings: l.boardings,
+          alightings: l.alightings,
+          onboard_after: l.onboard_after,
+          measurement_method: l.measurement_method,
+          source_label: l.source_label
+        }))
+      );
+
+      // 6. Bus Positions (GPS telemetry)
+      await chunkInsert(
+        'bus_positions',
+        parsedDataset.busPositions.map((p: BusPosition) => ({
+          organization_id: orgId,
+          dataset_version_id: versionId,
+          position_id: p.position_id,
+          bus_id: p.bus_id,
+          trip_id: p.trip_id,
+          route_id: p.route_id,
+          direction: p.direction,
+          timestamp: p.timestamp,
+          latitude: p.latitude,
+          longitude: p.longitude,
+          speed_kmh: p.speed_kmh,
+          source_label: p.source_label
+        }))
+      );
+
+      // 7. Vehicles
+      await chunkInsert(
+        'vehicles',
         parsedDataset.vehicles.map((v: Vehicle) => ({
           organization_id: orgId,
           dataset_version_id: versionId,
           bus_id: v.bus_id,
+          registration: v.registration,
           vehicle_model: v.registration,
           capacity_seated: v.capacity_seated,
           capacity_standing: v.capacity_standing,
           capacity_total: v.capacity_total,
+          current_location_stop_id: v.current_location_stop_id,
           status: v.status,
-          depot_assignment: 'Hebbal Depot',
+          depot_assignment: null,
           source_label: v.source_label
         }))
       );
 
-      await supabase.from('crew_availability').insert(
+      // 8. Crew Availability
+      await chunkInsert(
+        'crew_availability',
         parsedDataset.crewAvailability.map((c: CrewAvailability) => ({
           organization_id: orgId,
           dataset_version_id: versionId,
           crew_id: c.crew_id,
-          driver_name: c.crew_id,
-          shift_id: 'SHIFT-1',
+          role: c.role,
+          driver_name: null,
+          shift_id: null,
           shift_start: c.shift_start,
           shift_end: c.shift_end,
           assigned_bus_id: c.assigned_bus_id,
           status: c.status,
-          depot_location: 'Silk Board Depot',
+          depot_location: null,
           source_label: c.source_label
         }))
       );

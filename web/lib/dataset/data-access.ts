@@ -271,18 +271,23 @@ export async function getValidatedDataset(): Promise<{
   validationReport: DatasetValidationResult;
 }> {
   if (process.env.DATASET_SOURCE === 'supabase') {
-    try {
-      const { getDatasetRepository } = await import('../supabase/dataset-repository');
-      const repo = getDatasetRepository();
-      if (repo.source === 'supabase_published') {
-        const dataset = await repo.getDataset();
-        const validationReport = validateDataset(dataset);
-        return { dataset, validationReport };
-      }
-    } catch (err) {
-      console.warn('Supabase dataset repository error; falling back to local files:', err);
+    const { getDatasetRepository } = await import('../supabase/dataset-repository');
+    const { isSupabaseConfigured } = await import('../supabase/client');
+
+    if (!isSupabaseConfigured()) {
+      throw new Error(
+        'DATASET_SOURCE is configured as "supabase", but required Supabase credentials ' +
+        '(SUPABASE_URL and SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY) are not configured. ' +
+        'Cannot fall back silently to local synthetic data in production mode.'
+      );
     }
+
+    const repo = getDatasetRepository();
+    const dataset = await repo.getDataset();
+    const validationReport = validateDataset(dataset);
+    return { dataset, validationReport };
   }
+
   const { dataset, validationResult } = await loadAndValidateInternal();
   return { dataset, validationReport: validationResult };
 }
@@ -293,11 +298,11 @@ export async function getValidatedDataset(): Promise<{
  * Throws a descriptive Error identifying all failed checks if validation fails.
  */
 export async function getCompleteDataset(): Promise<CompleteDataset> {
-  const { dataset, validationResult } = await loadAndValidateInternal();
-  if (!validationResult.valid) {
+  const { dataset, validationReport } = await getValidatedDataset();
+  if (!validationReport.valid) {
     throw new Error(
-      `Operational dataset validation error (${validationResult.failedChecks} check(s) failed):\n` +
-      validationResult.errors.join('\n')
+      `Operational dataset validation error (${validationReport.failedChecks} check(s) failed):\n` +
+      validationReport.errors.join('\n')
     );
   }
   return dataset;

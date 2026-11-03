@@ -268,11 +268,11 @@ export default function SimulationClient({ initialData }: SimulationClientProps)
 
       {/* Header & Overview Card */}
       <PageHeader
-        badge="Scenario Simulator"
+        badge="Planning &amp; Sandbox"
         badgeTone="teal"
-        serviceArea="Silk Board–Hebbal, Bengaluru (19.8 km)"
-        title="Operational Intervention Sandbox &amp; Impact Analysis"
-        description="Simulate operational adjustments across approved morning bunching, evening service gap, and passenger crowding scenarios. This deterministic model evaluates exact constraints without altering approved source dataset records."
+        serviceArea="Silk Board–Hebbal, Bengaluru"
+        title="Scenario Planning"
+        description="Model operational adjustments across bus spacing &amp; holding, service gap relief, and passenger crowding scenarios. Evaluates mathematical feasibility and resource availability."
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Button
@@ -290,18 +290,18 @@ export default function SimulationClient({ initialData }: SimulationClientProps)
       {/* Deterministic Disclaimer Banner */}
       <AlertPanel
         severity="info"
-        title="Deterministic Operations Model"
-        description="Calculations evaluate approved mathematical constraints from assumptions.json. This is not a black-box predictive AI system or live passenger forecast."
+        title="Deterministic Operations &amp; Impact Modeling"
+        description="Scenario evaluations model projected headway, service gap, and passenger crowding impacts using deterministic transport operations models. All adjustments are non-destructive decision-support simulations without altering published operational datasets."
       />
 
       {/* Navigation Tabs */}
       <div className="bg-white rounded-xl border border-slate-200 p-2 shadow-xs">
         <div className="flex flex-wrap items-center gap-1.5">
           {[
-            { id: "holding", label: "Scenario 1: Bus Bunching Hold", icon: Clock },
-            { id: "relief", label: "Scenario 2: Service Gap Relief", icon: Bus },
-            { id: "crowding", label: "Scenario 3: Crowding & Frequency", icon: Users },
-            { id: "comparison", label: "Multi-Scenario Matrix", icon: FileSpreadsheet }
+            { id: "holding", label: "Bus Spacing & Holding", icon: Clock },
+            { id: "relief", label: "Service Gap & Standby Relief", icon: Bus },
+            { id: "crowding", label: "Crowding & Frequency", icon: Users },
+            { id: "comparison", label: "Scenario Comparison Matrix", icon: FileSpreadsheet }
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;

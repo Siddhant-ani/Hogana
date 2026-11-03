@@ -176,11 +176,11 @@ export default function ReportsClient({ initialData }: ReportsClientProps) {
       {/* Non-Printable Header & Controls Card */}
       <div className="print:hidden space-y-4">
         <PageHeader
-          badge="Operational Reports"
+          badge="Service Performance"
           badgeTone="teal"
-          serviceArea="Silk Board–Hebbal, Bengaluru (19.8 km)"
-          title="Service Operations Performance Reports"
-          description="Inspect and export formal performance audit reports. Download structured tabular CSV or complete JSON representations, or print directly to PDF."
+          serviceArea="Silk Board–Hebbal, Bengaluru"
+          title="Performance &amp; Operations Reports"
+          description="Formal performance audits, timetable fulfilment, headway regularity records, and dispatch review history. Export to CSV, JSON, or print to PDF."
           actions={
             <div className="flex flex-wrap items-center gap-2">
               <Button
@@ -252,7 +252,7 @@ export default function ReportsClient({ initialData }: ReportsClientProps) {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
               <div>
                 <span className="font-mono text-xs font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded">
-                  DOCUMENT: {standardReport.reportId}
+                  Report ID: {standardReport.reportId}
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 mt-1">
                   {standardReport.title}
@@ -389,7 +389,7 @@ export default function ReportsClient({ initialData }: ReportsClientProps) {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
               <div>
                 <span className="font-mono text-xs font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded">
-                  DOCUMENT: REP-REVIEWS
+                  Report ID: REP-REVIEWS
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 mt-1">
                   Local Dispatcher Review Audit Log
@@ -461,7 +461,7 @@ export default function ReportsClient({ initialData }: ReportsClientProps) {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
               <div>
                 <span className="font-mono text-xs font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded">
-                  DOCUMENT: REP-SIMRUNS
+                  Report ID: REP-SIMRUNS
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 mt-1">
                   Local Scenario Simulation Runs Log

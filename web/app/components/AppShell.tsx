@@ -20,10 +20,10 @@ import {
 import HoganaBrand from "./ui/HoganaBrand";
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Data Centre", href: "/data", icon: Database },
-  { name: "Interventions", href: "/interventions", icon: ShieldAlert },
-  { name: "Simulation", href: "/simulation", icon: GitBranch },
+  { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Data & Quality", href: "/data", icon: Database },
+  { name: "Recommendations", href: "/interventions", icon: ShieldAlert },
+  { name: "Scenario Planning", href: "/simulation", icon: GitBranch },
   { name: "Reports", href: "/reports", icon: FileText },
 ];
 
@@ -122,11 +122,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             {/* Authentication Controls */}
             {sessionUser ? (
               <div className="flex items-center gap-2 pl-1 border-l border-slate-700/80">
-                <div className="flex items-center gap-1.5 bg-slate-800/90 text-slate-200 border border-slate-700/80 px-2.5 py-1 rounded-md">
+                <div className="flex items-center gap-2 bg-slate-800/90 text-slate-200 border border-slate-700/80 px-2.5 py-1 rounded-md">
                   <User className="h-3.5 w-3.5 text-[#0F8278]" />
                   <span className="font-semibold text-slate-100 truncate max-w-[120px] sm:max-w-none">
                     {sessionUser.name}
                   </span>
+                  {sessionUser.role && (
+                    <span className="capitalize text-[10px] font-medium px-1.5 py-0.2 rounded bg-[#0F8278]/30 text-teal-300 border border-[#0F8278]/40">
+                      {sessionUser.role.replace('_', ' ')}
+                    </span>
+                  )}
                 </div>
                 <button
                   type="button"

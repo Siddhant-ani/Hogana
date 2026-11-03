@@ -119,7 +119,8 @@ export function getSupabaseServerClient(cookieStore?: ReadonlyRequestCookies): S
  */
 export function getSupabaseAdminClient(): SupabaseClient | null {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
+  // A publishable key must never be used as a replacement for an administrative secret key.
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
 
   if (!url || !key) {
     return null;

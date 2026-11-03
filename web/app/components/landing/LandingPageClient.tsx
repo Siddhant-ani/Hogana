@@ -20,6 +20,7 @@ import {
   LogIn,
   LogOut,
   User,
+  UserPlus,
   Users,
   Bus,
   AlertTriangle
@@ -202,13 +203,22 @@ export default function LandingPageClient() {
                 </button>
               </div>
             ) : (
-              <Link
-                href="/login"
-                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#12233F] hover:text-[#0F8278] px-3.5 py-2 rounded-lg border border-[#DCE5ED] bg-white hover:bg-[#F5F7FA] transition-colors"
-              >
-                <LogIn className="h-3.5 w-3.5 text-[#0F8278]" />
-                <span>Sign in</span>
-              </Link>
+              <div className="hidden sm:flex items-center gap-2">
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#12233F] hover:text-[#0F8278] px-3.5 py-2 rounded-lg border border-[#DCE5ED] bg-white hover:bg-[#F5F7FA] transition-colors"
+                >
+                  <LogIn className="h-3.5 w-3.5 text-[#0F8278]" />
+                  <span>Sign in</span>
+                </Link>
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0F8278] hover:text-[#0c6961] px-3.5 py-2 rounded-lg border border-[#0F8278]/30 bg-[#EAF4F7] hover:bg-[#ddf0ed] transition-colors"
+                >
+                  <UserPlus className="h-3.5 w-3.5 text-[#0F8278]" />
+                  <span>Sign up</span>
+                </Link>
+              </div>
             )}
 
             <Link
@@ -346,13 +356,22 @@ export default function LandingPageClient() {
                   Sign out ({sessionUser.name})
                 </button>
               ) : (
-                <Link
-                  href="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-center text-xs font-semibold text-[#12233F] py-2.5 rounded-lg border border-[#DCE5ED] bg-white hover:bg-[#F5F7FA]"
-                >
-                  Sign In to Account
-                </Link>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-center text-xs font-semibold text-[#12233F] py-2.5 rounded-lg border border-[#DCE5ED] bg-white hover:bg-[#F5F7FA]"
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    href="/signup"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-center text-xs font-semibold text-[#0F8278] py-2.5 rounded-lg border border-[#0F8278]/30 bg-[#EAF4F7] hover:bg-[#ddf0ed]"
+                  >
+                    Sign up
+                  </Link>
+                </div>
               )}
               <Link
                 href="/dashboard"

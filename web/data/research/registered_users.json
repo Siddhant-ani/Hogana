@@ -1,0 +1,22 @@
+[
+  {
+    "id": "00000000-0000-4000-8000-000000000001",
+    "email": "operator@hogana.transit",
+    "name": "Lead Operations Dispatcher",
+    "role": "dispatcher",
+    "organizationId": "a0000000-0000-0000-0000-000000000001",
+    "salt": "3508c99d32951e4c750b10fad454553e",
+    "passwordHash": "6161bf7444c6915e9affeeeb6a5e04e81d6dbb72d0dca48efbf0793531da7c63da6662da2acb5e1ff1601f36c948a474096665c30cfe82e1440fd07f3d8bf8a9",
+    "createdAt": "2026-11-03T09:07:06.133Z"
+  },
+  {
+    "id": "0e99611a-c298-4ea4-a09a-61cecbfa9832",
+    "email": "pilot.user@transit.org",
+    "name": "Pilot Operator",
+    "role": "dispatcher",
+    "organizationId": "a0000000-0000-0000-0000-000000000001",
+    "salt": "ebd76b178c8515ab872d515861cf8a4e",
+    "passwordHash": "856ddfef3d39767e940020dff205b3e0ec4b2245bbc1164fc8c3065e3d250252fd7835d709c7bbb28fda2438237e8baf5cc7f9e081885200c96929fa0e5bd65f",
+    "createdAt": "2026-11-03T09:07:06.182Z"
+  }
+]

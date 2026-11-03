@@ -15,7 +15,8 @@ import {
   Calendar,
   LogOut,
   User,
-  LogIn
+  LogIn,
+  UserPlus
 } from "lucide-react";
 import HoganaBrand from "./ui/HoganaBrand";
 
@@ -145,13 +146,22 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 </button>
               </div>
             ) : (
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-semibold text-white bg-[#0F8278] hover:bg-[#0c6961] shadow-2xs transition-colors"
-              >
-                <LogIn className="h-3.5 w-3.5" />
-                <span>Sign in</span>
-              </Link>
+              <div className="flex items-center gap-1.5">
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold text-slate-200 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors"
+                >
+                  <LogIn className="h-3.5 w-3.5" />
+                  <span>Sign in</span>
+                </Link>
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold text-white bg-[#0F8278] hover:bg-[#0c6961] shadow-2xs transition-colors"
+                >
+                  <UserPlus className="h-3.5 w-3.5" />
+                  <span>Sign up</span>
+                </Link>
+              </div>
             )}
           </div>
         </div>

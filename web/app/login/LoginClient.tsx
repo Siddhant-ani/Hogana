@@ -207,6 +207,42 @@ export default function LoginClient() {
             </button>
           </form>
 
+          {/* Switch to Sign Up */}
+          <div className="text-center text-xs text-slate-600 pt-1">
+            <span>Don&apos;t have an account? </span>
+            <Link
+              href={`/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+              className="font-bold text-[#0F8278] hover:text-[#0c6961] underline underline-offset-2"
+            >
+              Create Account / Sign up
+            </Link>
+          </div>
+
+          {/* Demo Operator Credentials Helper */}
+          <div className="p-3 bg-[#EAF4F7]/70 border border-[#0F8278]/25 rounded-xl space-y-1.5 text-xs">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 font-bold text-[#12233F]">
+                <Info className="h-3.5 w-3.5 text-[#0F8278]" />
+                <span>Demo Operator Credentials</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail("operator@hogana.transit");
+                  setPassword("HoganaOps@2025!");
+                  setFieldErrors({});
+                }}
+                className="text-[11px] font-bold text-[#0F8278] hover:text-[#0c6961] underline"
+              >
+                Auto-fill
+              </button>
+            </div>
+            <div className="text-[11px] text-slate-600 font-mono space-y-0.5">
+              <div>Email: <strong className="text-slate-800">operator@hogana.transit</strong></div>
+              <div>Password: <strong className="text-slate-800">HoganaOps@2025!</strong></div>
+            </div>
+          </div>
+
           {/* Security Features */}
           <div className="pt-2 border-t border-[#DCE5ED] flex items-center justify-center gap-4 text-[11px] text-slate-500">
             <span className="flex items-center gap-1">

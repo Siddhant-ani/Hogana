@@ -181,7 +181,7 @@ export default function LandingPageClient() {
             <a href="#how-it-works" className="hover:text-[#0F8278] transition-colors">How It Works</a>
             <a href="#features" className="hover:text-[#0F8278] transition-colors">Capabilities</a>
             <a href="#service-area" className="hover:text-[#0F8278] transition-colors">Service Area</a>
-            <a href="#pilot" className="hover:text-[#0F8278] transition-colors">Pilot Framework</a>
+            <a href="#enquiry" className="hover:text-[#0F8278] transition-colors">Enquiry</a>
             <a href="#faq" className="hover:text-[#0F8278] transition-colors">FAQ</a>
           </nav>
 
@@ -282,11 +282,11 @@ export default function LandingPageClient() {
                 Silk Board–Hebbal, Bengaluru
               </a>
               <a
-                href="#pilot"
+                href="#enquiry"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block px-3 py-2 rounded-lg text-sm font-medium text-slate-800 hover:bg-[#EAF4F7] hover:text-[#0F8278]"
               >
-                Pilot Framework
+                Submit an Enquiry
               </a>
               <a
                 href="#faq"
@@ -417,10 +417,10 @@ export default function LandingPageClient() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <a
-                href="#pilot-enquiry"
+                href="#enquiry"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm sm:text-base text-[#12233F] bg-white hover:bg-[#F5F7FA] border border-[#DCE5ED] shadow-2xs transition-all"
               >
-                <span>Discuss a Pilot</span>
+                <span>Submit an Enquiry</span>
               </a>
             </div>
 
@@ -921,8 +921,9 @@ export default function LandingPageClient() {
         </div>
       </section>
 
-      {/* SECTION 9: CONTACT & PILOT ENQUIRY (WHITE BACKGROUND) */}
-      <section id="pilot-enquiry" className="py-16 sm:py-24 bg-white">
+      {/* SECTION 9: CUSTOMER CARE & ENQUIRY */}
+      <section id="enquiry" className="py-16 sm:py-24 bg-white relative">
+        <span id="pilot-enquiry" className="absolute -top-20" />
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Back to Overview button */}
           <div className="flex items-center justify-start mb-6">
@@ -937,13 +938,13 @@ export default function LandingPageClient() {
 
           <div className="text-center space-y-3 mb-10">
             <span className="text-xs font-bold uppercase tracking-wider text-[#0F8278] bg-[#EAF4F7] border border-[#0F8278]/25 px-2.5 py-1 rounded">
-              Partner with HOGANA
+              Get in Touch with Our Team
             </span>
             <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-[#12233F]">
-              Discuss an Agency Pilot
+              Submit an Enquiry
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600">
-              Interested in deploying HOGANA on your high-frequency transit routes? Submit your enquiry below.
+            <p className="text-xs sm:text-sm text-slate-600 max-w-lg mx-auto">
+              Interested in deploying HOGANA for your bus fleet or operations? Fill out your details below and our customer care executive will contact you shortly.
             </p>
           </div>
 
@@ -992,14 +993,14 @@ export default function LandingPageClient() {
 
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-[#12233F] block">
-                  Agency / Organisation <span className="text-[#DC2626]">*</span>
+                  Company / Bus Fleet Name <span className="text-[#DC2626]">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={formOrg}
                   onChange={(e) => setFormOrg(e.target.value)}
-                  placeholder="e.g. BMTC, BEST, KSRTC"
+                  placeholder="e.g. City Express Transit, SRS Lines"
                   className="w-full text-xs p-2.5 rounded-lg border border-[#DCE5ED] bg-white focus:outline-none focus:ring-2 focus:ring-[#0F8278]"
                 />
               </div>
@@ -1008,27 +1009,28 @@ export default function LandingPageClient() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-[#12233F] block">
-                  Work Email <span className="text-[#DC2626]">*</span>
+                  Work Email Address <span className="text-[#DC2626]">*</span>
                 </label>
                 <input
                   type="email"
                   required
                   value={formEmail}
                   onChange={(e) => setFormEmail(e.target.value)}
-                  placeholder="name@agency.gov.in"
+                  placeholder="name@buscompany.com"
                   className="w-full text-xs p-2.5 rounded-lg border border-[#DCE5ED] bg-white focus:outline-none focus:ring-2 focus:ring-[#0F8278]"
                 />
               </div>
 
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-[#12233F] block">
-                  Contact Number <span className="text-slate-400 font-normal">(Optional)</span>
+                  Contact Phone Number <span className="text-[#DC2626]">*</span>
                 </label>
                 <input
                   type="tel"
+                  required
                   value={formPhone}
                   onChange={(e) => setFormPhone(e.target.value)}
-                  placeholder="+91 98765 43210"
+                  placeholder="+91 98765 43210 (Executive will call this number)"
                   className="w-full text-xs p-2.5 rounded-lg border border-[#DCE5ED] bg-white focus:outline-none focus:ring-2 focus:ring-[#0F8278]"
                 />
               </div>
@@ -1043,29 +1045,29 @@ export default function LandingPageClient() {
                 onChange={(e) => setFormFleetSize(e.target.value)}
                 className="w-full text-xs p-2.5 rounded-lg border border-[#DCE5ED] bg-white focus:outline-none focus:ring-2 focus:ring-[#0F8278]"
               >
-                <option value="1-50">1 – 50 buses (Service pilot)</option>
-                <option value="51-200">51 – 200 buses (Depot level)</option>
-                <option value="201-1000">201 – 1,000 buses (Division level)</option>
-                <option value="1000+">1,000+ buses (Citywide fleet)</option>
+                <option value="1-50">1 – 50 buses</option>
+                <option value="51-200">51 – 200 buses</option>
+                <option value="201-1000">201 – 1,000 buses</option>
+                <option value="1000+">1,000+ buses</option>
               </select>
             </div>
 
             <div className="space-y-1">
               <label className="text-xs font-semibold text-[#12233F] block">
-                Pilot Objectives &amp; Message <span className="text-[#DC2626]">*</span>
+                Operational Requirements &amp; Message <span className="text-[#DC2626]">*</span>
               </label>
               <textarea
                 required
                 rows={4}
                 value={formMessage}
                 onChange={(e) => setFormMessage(e.target.value)}
-                placeholder="Describe your current headway challenges, routes of interest, or pilot timeline..."
+                placeholder="Tell us about your fleet routes, scheduling challenges, or questions for our customer care team..."
                 className="w-full text-xs p-2.5 rounded-lg border border-[#DCE5ED] bg-white focus:outline-none focus:ring-2 focus:ring-[#0F8278]"
               />
             </div>
 
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-              <span className="text-[11px] text-slate-400">Configurable destination via PILOT_ENQUIRY_WEBHOOK_URL.</span>
+              <span className="text-[11px] text-slate-500">Our customer care team typically reaches out within 2–4 business hours.</span>
               <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                 <a
                   href="#top"
@@ -1081,7 +1083,7 @@ export default function LandingPageClient() {
                   isLoading={isSubmitting}
                   rightIcon={<Send className="h-3.5 w-3.5" />}
                 >
-                  Submit Pilot Enquiry
+                  Submit Enquiry
                 </Button>
               </div>
             </div>

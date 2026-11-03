@@ -144,7 +144,7 @@ export async function POST(request: Request) {
         success: true,
         mode: 'demonstration_store',
         enquiryId: enquiryRecord.id,
-        message: 'Enquiry received. Logged to local demonstration store for development/testing.'
+        message: 'Enquiry received. Our customer care executive will contact you shortly.'
       });
     } catch (fsErr: unknown) {
       console.error('Local file persistence failed:', fsErr);

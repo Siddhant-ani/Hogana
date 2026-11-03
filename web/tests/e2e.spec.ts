@@ -198,20 +198,21 @@ test.describe('HOGANA End-to-End Acceptance: Branding, Auth, Terminology & Workf
 
     // Attempt invalid email
     await page.fill('input[placeholder*="Ramesh Kumar"]', 'Transit Director');
-    await page.fill('input[placeholder*="BMTC"]', 'Regional Transit Agency');
-    await page.fill('input[placeholder*="name@agency"]', 'invalid-email-format');
+    await page.locator('#pilot-enquiry input, #enquiry input').nth(1).fill('Regional Transit Agency');
+    await page.locator('#pilot-enquiry input[type="email"], #enquiry input[type="email"]').fill('invalid-email-format');
+    await page.locator('#pilot-enquiry input[type="tel"], #enquiry input[type="tel"]').fill('+91 98765 43210');
     await page.fill('textarea', 'Brief text');
-    await page.click('button:has-text("Submit Pilot Enquiry")');
+    await page.click('button:has-text("Submit Enquiry")');
 
-    const emailInput = page.locator('input[placeholder*="name@agency"]');
+    const emailInput = page.locator('#pilot-enquiry input[type="email"], #enquiry input[type="email"]');
     const isValid = await emailInput.evaluate((el: HTMLInputElement) => el.checkValidity());
     expect(isValid).toBe(false);
 
     // Provide valid email and message
-    await page.fill('input[placeholder*="name@agency"]', 'director@transitauthority.gov');
+    await emailInput.fill('director@transitauthority.gov');
     await page.selectOption('select', { index: 1 });
-    await page.fill('textarea', 'Requesting service operations pilot evaluation.');
-    await page.click('button:has-text("Submit Pilot Enquiry")');
+    await page.fill('textarea', 'Requesting fleet operations enquiry and platform onboarding.');
+    await page.click('button:has-text("Submit Enquiry")');
 
     await expect(
       page.locator('text=Pilot enquiry delivery target is not configured').or(

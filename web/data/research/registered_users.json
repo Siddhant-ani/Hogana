@@ -29,5 +29,16 @@
     "salt": "3398a342928cb5f1bf4c5d3f38193385",
     "passwordHash": "b83125f6f4b75bc148bc702247aef0249487cad12d369de3ba3b180a8fc28ec74e0d5b4ed24c82652e5e3caff2af0d6a5d405c9fefd746a2ef541d4ce77d0caf",
     "createdAt": "2026-11-03T09:40:53.345Z"
+  },
+  {
+    "id": "8afb313d-930d-4773-9f28-d007b85d9b2c",
+    "email": "siddhantdash1212@gmail.com",
+    "name": "Siddhant",
+    "company": "City Bus",
+    "role": "administrator",
+    "organizationId": "a0000000-0000-0000-0000-000000000001",
+    "salt": "ff62d88013ba5d52ed68277c891bdd10",
+    "passwordHash": "734a82d97a9f739aa30b8b2ab3d56aaf20ce36a81bc6d9c14aad2d94cf7059ce69962aa92a76034529394e09fc44031729c52f959165127873b47311936a108d",
+    "createdAt": "2026-11-03T09:47:30.707Z"
   }
 ]

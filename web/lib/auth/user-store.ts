@@ -92,6 +92,12 @@ export async function getRegisteredUsers(): Promise<StoredUser[]> {
   return Array.from(inMemoryUsers.values());
 }
 
+export function hydrateUser(user: StoredUser): void {
+  if (user && user.email && user.salt && user.passwordHash) {
+    inMemoryUsers.set(user.email.toLowerCase().trim(), user);
+  }
+}
+
 export async function findUserByEmail(email: string): Promise<StoredUser | null> {
   const normalized = email.toLowerCase().trim();
   // Check in-memory map first (instant, zero I/O)
@@ -104,6 +110,9 @@ export async function findUserByEmail(email: string): Promise<StoredUser | null>
 }
 
 export async function findUserById(id: string): Promise<StoredUser | null> {
+  const fromMem = Array.from(inMemoryUsers.values()).find((u) => u.id === id);
+  if (fromMem) return fromMem;
+
   const users = await getRegisteredUsers();
   return users.find((u) => u.id === id) || null;
 }

@@ -6,6 +6,7 @@ import {
   findUserById,
   registerUser,
   verifyCredentials,
+  hydrateUser,
   type StoredUser
 } from './user-store';
 
@@ -100,7 +101,7 @@ export async function signUpWithSupabase(
     }
   }
 
-  // 3. Establish HTTP-only session cookies
+  // 3. Establish HTTP-only session cookies & store browser vault record
   cookieStore.set('sb-test-auth', 'true', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -116,6 +117,34 @@ export async function signUpWithSupabase(
     path: '/',
     maxAge: 7 * 24 * 60 * 60
   });
+
+  // Store persistent vault cookie (survives Vercel serverless cold starts across any container)
+  try {
+    const existingVault = cookieStore.get('hogana_user_vault')?.value;
+    let vaultList: StoredUser[] = [];
+    if (existingVault) {
+      try {
+        const parsed = JSON.parse(Buffer.from(existingVault, 'base64').toString('utf8'));
+        if (Array.isArray(parsed)) {
+          vaultList = parsed.filter((u) => u.email?.toLowerCase() !== storedUser.email.toLowerCase());
+        }
+      } catch {
+        // start clean
+      }
+    }
+    vaultList.push(storedUser);
+    if (vaultList.length > 10) vaultList = vaultList.slice(-10);
+
+    cookieStore.set('hogana_user_vault', Buffer.from(JSON.stringify(vaultList)).toString('base64'), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 30 * 24 * 60 * 60
+    });
+  } catch {
+    // cookie size fallback
+  }
 
   const authUser: AuthUser = {
     id: storedUser.id,
@@ -138,6 +167,21 @@ export async function signUpWithSupabase(
 export async function loginWithSupabase(email: string, password: string): Promise<LoginResult> {
   const normalizedEmail = email.toLowerCase().trim();
   const cookieStore = await cookies();
+
+  // Re-hydrate any registered accounts stored in client vault cookie (resilient on Vercel cold starts)
+  try {
+    const vaultCookie = cookieStore.get('hogana_user_vault')?.value;
+    if (vaultCookie) {
+      const parsed = JSON.parse(Buffer.from(vaultCookie, 'base64').toString('utf8'));
+      if (Array.isArray(parsed)) {
+        for (const u of parsed) {
+          hydrateUser(u);
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
 
   // 1. If Supabase is configured, attempt Supabase Auth with safe 4-second timeout
   if (isSupabaseConfigured()) {
@@ -329,6 +373,21 @@ export async function logoutSupabase(): Promise<{ success: boolean; message: str
 export async function getCurrentSessionUser(): Promise<AuthUser | null> {
   try {
     const cookieStore = await cookies();
+
+    // Re-hydrate any registered accounts from client vault cookie
+    try {
+      const vaultCookie = cookieStore.get('hogana_user_vault')?.value;
+      if (vaultCookie) {
+        const parsed = JSON.parse(Buffer.from(vaultCookie, 'base64').toString('utf8'));
+        if (Array.isArray(parsed)) {
+          for (const u of parsed) {
+            hydrateUser(u);
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
 
     // 1. Check Supabase user if configured
     if (isSupabaseConfigured()) {

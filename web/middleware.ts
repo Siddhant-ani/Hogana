@@ -49,12 +49,11 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Automated test environment or session fallback support
-  if (!user) {
+  // Automated test runner support (only when running under Playwright or Jest)
+  if (!user && (process.env.PLAYWRIGHT_TEST === 'true' || process.env.NODE_ENV === 'test')) {
     const testCookie = request.cookies.get('sb-test-auth')?.value;
-    const sessionCookie = request.cookies.get('hogana_session')?.value;
-    if (testCookie === 'true' || sessionCookie) {
-      user = { id: sessionCookie || '00000000-0000-4000-8000-000000000001' } as any;
+    if (testCookie === 'true') {
+      user = { id: '00000000-0000-4000-8000-000000000001' } as any;
     }
   }
 
